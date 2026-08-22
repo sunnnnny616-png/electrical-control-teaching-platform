@@ -1330,17 +1330,16 @@
     }
 
     .app-shell {
-      height: 100vh;
+      min-height: 100vh;
       display: grid;
-      grid-template-rows: 64px minmax(0, 1fr) 48px;
+      grid-template-rows: 64px minmax(0, 1fr) auto;
       background: #f5f7fa;
     }
 
     .topbar {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
+      display: flex;
       align-items: center;
-      gap: 16px;
+      justify-content: center;
       padding: 0 24px;
       background: #ffffff;
       border-bottom: 1px solid #dde3ea;
@@ -1377,7 +1376,7 @@
     .workspace {
       min-height: 0;
       display: grid;
-      grid-template-columns: 220px minmax(0, 1fr) 320px;
+      grid-template-columns: 240px minmax(0, 1fr) 340px;
       gap: 16px;
       padding: 16px;
     }
@@ -1406,10 +1405,41 @@
       font-weight: 800;
     }
 
-    .module-nav {
+    .sidebar-current {
+      margin: 0 8px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: #f8fbff;
+      border: 1px solid #dbe7fb;
+      color: #64748b;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+
+    .sidebar-current strong {
+      color: #1f2937;
+      margin-left: 4px;
+    }
+
+    .chapter-group {
       display: flex;
       flex-direction: column;
       gap: 8px;
+    }
+
+    .chapter-label {
+      padding: 0 10px;
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+
+    .module-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
     }
 
     .module-nav-item {
@@ -1447,6 +1477,7 @@
     }
 
     .module-nav-item .label {
+      display: block;
       font-size: 14px;
       font-weight: 700;
       line-height: 1.5;
@@ -2559,14 +2590,65 @@
       line-height: 1.7;
     }
 
+    .ai-placeholder-copy {
+      color: #64748b;
+    }
+
     .footerbar {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 14px 16px 16px;
+      background: #ffffff;
+      border-top: 1px solid #dde3ea;
+    }
+
+    .footer-playback-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .footer-playback-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
-      padding: 0 16px;
-      background: #ffffff;
-      border-top: 1px solid #dde3ea;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .footer-playback-head strong {
+      color: #1f2937;
+      font-size: 15px;
+    }
+
+    .footer-playback-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .footer-playback-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .footerbar .note {
+      flex: 1 1 420px;
+      min-height: 44px;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      border-radius: 12px;
+      border: 1px solid #e5eaf0;
+      background: #f9fbfd;
+      color: #475569;
     }
 
     .footer-legend {
@@ -2625,7 +2707,7 @@
 
     @media (max-width: 1480px) {
       .workspace {
-        grid-template-columns: 220px minmax(0, 1fr);
+        grid-template-columns: 240px minmax(0, 1fr);
       }
 
       .inspector {
@@ -2647,8 +2729,7 @@
       }
 
       .topbar {
-        grid-template-columns: 1fr;
-        justify-items: start;
+        justify-content: flex-start;
         padding: 14px 16px;
       }
 
@@ -2671,14 +2752,14 @@
       }
 
       .footerbar {
-        align-items: flex-start;
-        flex-direction: column;
         padding: 12px 16px;
       }
 
-      .footer-tip {
-        white-space: normal;
-        text-align: left;
+      .footer-playback-head,
+      .footer-playback-actions,
+      .footer-playback-meta {
+        align-items: stretch;
+        flex-direction: column;
       }
     }
   </style>
@@ -2687,31 +2768,48 @@
   <div class="app-shell">
     <header class="topbar">
       <div class="topbar-brand">电器控制系统交互式教学平台</div>
-      <div class="topbar-center">第二章 电器控制系统</div>
-      <div class="topbar-current">当前模块：<strong id="currentModuleText">主电路与控制电路</strong></div>
     </header>
 
     <div class="workspace">
       <aside class="sidebar">
-        <div class="sidebar-title">电路演示目录</div>
-        <nav class="module-nav">
-          <button class="module-nav-item active" data-module="main-control">
-            <span class="num">01</span>
-            <span class="label">主电路与控制电路</span>
-          </button>
-          <button class="module-nav-item" data-module="jog-control">
-            <span class="num">02</span>
-            <span class="label">点动控制</span>
-          </button>
-          <button class="module-nav-item" data-module="self-lock">
-            <span class="num">03</span>
-            <span class="label">长动控制</span>
-          </button>
-          <button class="module-nav-item" data-module="forward-reverse">
-            <span class="num">04</span>
-            <span class="label">正反转控制</span>
-          </button>
-        </nav>
+        <div class="sidebar-title">章节与实验模块</div>
+        <div class="sidebar-current">当前实验：<strong id="currentModuleText">主电路与控制电路</strong></div>
+        <section class="chapter-group">
+          <div class="chapter-label">第一章</div>
+          <nav class="module-nav">
+            <button class="module-nav-item active" data-module="main-control">
+              <span class="num">01</span>
+              <span class="label">主电路与控制电路</span>
+            </button>
+          </nav>
+        </section>
+        <section class="chapter-group">
+          <div class="chapter-label">第二章</div>
+          <nav class="module-nav">
+            <button class="module-nav-item" data-module="jog-control">
+              <span class="num">02</span>
+              <span class="label">点动控制</span>
+            </button>
+          </nav>
+        </section>
+        <section class="chapter-group">
+          <div class="chapter-label">第三章</div>
+          <nav class="module-nav">
+            <button class="module-nav-item" data-module="self-lock">
+              <span class="num">03</span>
+              <span class="label">长动控制</span>
+            </button>
+          </nav>
+        </section>
+        <section class="chapter-group">
+          <div class="chapter-label">第四章</div>
+          <nav class="module-nav">
+            <button class="module-nav-item" data-module="forward-reverse">
+              <span class="num">04</span>
+              <span class="label">正反转控制</span>
+            </button>
+          </nav>
+        </section>
       </aside>
 
       <main class="stage-panel">
@@ -3014,6 +3112,41 @@
           </div>
         </section>
 
+        <section class="info-card">
+          <h3>当前状态</h3>
+          <div class="status-grid">
+            <div class="status-row"><span id="statusPowerLabel">电源</span><span id="statusPower" class="pill off">未合上</span></div>
+            <div class="status-row"><span id="statusKi1Label">KI1</span><span id="statusKi1" class="pill off">释放</span></div>
+            <div class="status-row"><span id="statusKi2Label">KI2</span><span id="statusKi2" class="pill off">释放</span></div>
+            <div class="status-row"><span id="statusMotorLabel">电机</span><span id="statusMotor" class="pill off">停止</span></div>
+            <div class="status-row"><span id="statusProtectionLabel">保护状态</span><span id="statusProtection" class="pill on">正常</span></div>
+            <div class="status-row"><span id="statusModeLabel">运行状态</span><span id="statusMode" class="pill off">模块占位</span></div>
+            <div class="status-row"><span id="statusPhaseLabel">当前相序</span><span id="statusPhase" class="pill off">待显示</span></div>
+          </div>
+        </section>
+
+        <section class="info-card">
+          <h3>动作原理</h3>
+          <div class="box">
+            <strong id="teachTitle">正反转控制原理</strong>
+            <p id="teachText">三相异步电动机正反转控制通过接触器改变电动机两相相序实现转向切换，并利用辅助触点实现自锁与电气互锁。</p>
+          </div>
+          <div id="principleStepList" class="principle-step-list">
+            <div class="principle-step-item pending">
+              <span class="principle-step-marker">○</span>
+              <span class="principle-step-text">执行一次操作后，可点击“展示原理”查看教学步骤。</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="info-card">
+          <h3>AI分析</h3>
+          <div class="box">
+            <strong>国产模型API占位</strong>
+            <p class="ai-placeholder-copy">后续支持：故障分析、原理问答、学生辅导。</p>
+          </div>
+        </section>
+
         <section id="developerCalibrationCard" class="info-card hidden">
           <h3>校准模式</h3>
           <div class="box calibration-box">
@@ -3058,52 +3191,8 @@
           <pre id="solverDebugPre">开发面板未启用</pre>
         </section>
 
-        <section class="info-card">
-          <h3>当前状态</h3>
-          <div class="status-grid">
-            <div class="status-row"><span id="statusPowerLabel">电源</span><span id="statusPower" class="pill off">未合上</span></div>
-            <div class="status-row"><span id="statusKi1Label">KI1</span><span id="statusKi1" class="pill off">释放</span></div>
-            <div class="status-row"><span id="statusKi2Label">KI2</span><span id="statusKi2" class="pill off">释放</span></div>
-            <div class="status-row"><span id="statusMotorLabel">电机</span><span id="statusMotor" class="pill off">停止</span></div>
-            <div class="status-row"><span id="statusProtectionLabel">保护状态</span><span id="statusProtection" class="pill on">正常</span></div>
-            <div class="status-row"><span id="statusModeLabel">运行状态</span><span id="statusMode" class="pill off">模块占位</span></div>
-            <div class="status-row"><span id="statusPhaseLabel">当前相序</span><span id="statusPhase" class="pill off">待显示</span></div>
-          </div>
-        </section>
-
-        <section class="info-card">
-          <h3>当前原理</h3>
-          <div class="box">
-            <strong id="teachTitle">正反转控制原理</strong>
-            <p id="teachText">三相异步电动机正反转控制通过接触器改变电动机两相相序实现转向切换，并利用辅助触点实现自锁与电气互锁。</p>
-          </div>
-          <div class="principle-toolbar">
-            <button id="showPrinciplePlayback" class="small-btn principle-play-btn" disabled>展示原理</button>
-            <div id="playbackControls" class="playback-controls">
-              <button id="playbackPrev" class="small-btn" disabled>上一页</button>
-              <button id="playbackToggle" class="small-btn" disabled>播放</button>
-              <button id="playbackNext" class="small-btn" disabled>下一步</button>
-            </div>
-          </div>
-          <div class="playback-speed-row">
-            <span class="playback-speed-label">速度</span>
-            <div class="playback-speed-group">
-              <button id="playbackSpeed05" class="small-btn">0.5x</button>
-              <button id="playbackSpeed10" class="small-btn active">1x</button>
-              <button id="playbackSpeed15" class="small-btn">1.5x</button>
-            </div>
-          </div>
-          <div class="note" id="currentStepText">当前步骤：待机，未播放教学回放。</div>
-          <div id="principleStepList" class="principle-step-list">
-            <div class="principle-step-item pending">
-              <span class="principle-step-marker">○</span>
-              <span class="principle-step-text">执行一次操作后，可点击“展示原理”查看教学步骤。</span>
-            </div>
-          </div>
-        </section>
-
-        <section class="info-card">
-          <h3>操作提示</h3>
+        <section class="info-card hidden" aria-hidden="true">
+          <h3>模块提示缓存</h3>
           <div class="box">
             <strong id="infoTitle">教学说明</strong>
             <p id="infoText">正转与反转的区别在于主回路两相相序的交换；控制回路则通过辅助触点实现自锁与电气互锁。</p>
@@ -3114,14 +3203,38 @@
     </div>
 
     <footer class="footerbar">
-      <div class="footer-legend" id="footerLegend">
+      <div class="footer-playback-panel">
+        <div class="footer-playback-head">
+          <strong>展示原理 / 操作步骤回放</strong>
+          <div class="footer-playback-actions">
+            <button id="showPrinciplePlayback" class="small-btn principle-play-btn" disabled>展示原理</button>
+            <div id="playbackControls" class="playback-controls">
+              <button id="playbackPrev" class="small-btn" disabled>上一页</button>
+              <button id="playbackToggle" class="small-btn" disabled>播放</button>
+              <button id="playbackNext" class="small-btn" disabled>下一步</button>
+            </div>
+          </div>
+        </div>
+        <div class="footer-playback-meta">
+          <div class="playback-speed-row">
+            <span class="playback-speed-label">速度</span>
+            <div class="playback-speed-group">
+              <button id="playbackSpeed05" class="small-btn">0.5x</button>
+              <button id="playbackSpeed10" class="small-btn active">1x</button>
+              <button id="playbackSpeed15" class="small-btn">1.5x</button>
+            </div>
+          </div>
+          <div class="note" id="currentStepText">当前步骤：待机，未播放教学回放。</div>
+        </div>
+      </div>
+      <div class="footer-legend hidden" id="footerLegend" aria-hidden="true">
         <span class="legend-item"><i class="legend-line l1"></i>L1 黄色</span>
         <span class="legend-item"><i class="legend-line l2"></i>L2 青色</span>
         <span class="legend-item"><i class="legend-line l3"></i>L3 绿色</span>
         <span class="legend-item"><i class="legend-line ctrl"></i>控制电源 红色</span>
         <span class="legend-item"><i class="legend-line idle"></i>未通电线路 灰色</span>
       </div>
-      <div class="footer-tip" id="footerTip">教学演示会按真实动作顺序展示按钮、控制回路、线圈、辅助触点和主回路的变化。</div>
+      <div class="footer-tip hidden" id="footerTip" aria-hidden="true">教学演示会按真实动作顺序展示按钮、控制回路、线圈、辅助触点和主回路的变化。</div>
     </footer>
   </div>
 
@@ -3146,11 +3259,11 @@
         code: "02",
         name: "点动控制",
         experimentTitle: "点动控制演示",
-        experimentSubtitle: "本模块后续将实现“按住运行、松开停止”的交互效果。第一阶段先保留实验画布和操作说明骨架。",
-        principleTitle: "点动控制适用于试车和调整",
-        principleText: "按钮按下时，控制回路接通，接触器线圈得电，电机运行；按钮松开后，线圈断电，电机立即停止。",
-        promptText: "后续这里会增加按住按钮触发、松开按钮停止的交互。当前阶段先检查模块切换和说明同步是否正常。",
-        footerTip: "点动控制模块后续会重点表现按钮按压持续时间与电机运行状态的同步关系。",
+        experimentSubtitle: "按住启动按钮时，KM 线圈得电并接通主回路；按钮松开后，线圈释放，电机立即停止。",
+        principleTitle: "点动控制原理",
+        principleText: "点动控制不使用自锁支路。按钮持续按下期间控制回路导通，按钮松开后控制回路立即断开。",
+        promptText: "可先合上 QF，再按住 SB 观察 KM 吸合、电机运行；松开按钮后，观察控制回路与主回路同步断开。",
+        footerTip: "点动控制重点表现按钮持续按压时间与电机即时启停之间的对应关系。",
         placeholderTag: "交互占位",
         placeholderNote: "当前占位图已经预留 QF、SB、KM、FR、M 等元件位置。后续会在这里加入鼠标按住触发的状态判断和路径高亮。",
         zones: [
