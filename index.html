@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>电器控制系统交互式教学演示</title>
+  <title>电器控制系统交互式教学平台</title>
+  <link rel="icon" href="data:,">
   <style>
     :root {
       --bg: #0c1320;
@@ -2763,53 +2764,20 @@
       }
     }
   </style>
+  <link rel="stylesheet" href="./src/platform/shell/platform-shell-v1.css?v=20260822-2" />
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
-      <div class="topbar-brand">电器控制系统交互式教学平台</div>
+      <div class="topbar-brand"><span class="platform-logo" aria-hidden="true"></span>电器控制系统交互式教学平台</div>
     </header>
 
     <div class="workspace">
       <aside class="sidebar">
-        <div class="sidebar-title">章节与实验模块</div>
-        <div class="sidebar-current">当前实验：<strong id="currentModuleText">主电路与控制电路</strong></div>
-        <section class="chapter-group">
-          <div class="chapter-label">第一章</div>
-          <nav class="module-nav">
-            <button class="module-nav-item active" data-module="main-control">
-              <span class="num">01</span>
-              <span class="label">主电路与控制电路</span>
-            </button>
-          </nav>
-        </section>
-        <section class="chapter-group">
-          <div class="chapter-label">第二章</div>
-          <nav class="module-nav">
-            <button class="module-nav-item" data-module="jog-control">
-              <span class="num">02</span>
-              <span class="label">点动控制</span>
-            </button>
-          </nav>
-        </section>
-        <section class="chapter-group">
-          <div class="chapter-label">第三章</div>
-          <nav class="module-nav">
-            <button class="module-nav-item" data-module="self-lock">
-              <span class="num">03</span>
-              <span class="label">长动控制</span>
-            </button>
-          </nav>
-        </section>
-        <section class="chapter-group">
-          <div class="chapter-label">第四章</div>
-          <nav class="module-nav">
-            <button class="module-nav-item" data-module="forward-reverse">
-              <span class="num">04</span>
-              <span class="label">正反转控制</span>
-            </button>
-          </nav>
-        </section>
+        <div class="sidebar-title">章节目录</div>
+        <div class="sidebar-current hidden" aria-hidden="true">当前实验：<strong id="currentModuleText">主电路与控制电路</strong></div>
+        <div id="chapterNavigation" class="platform-chapter-navigation"></div>
+        <button type="button" class="sidebar-resource-link">实验资料与参考</button>
       </aside>
 
       <main class="stage-panel">
@@ -2827,6 +2795,7 @@
             <p id="experimentSubtitle">三相异步电动机正反转控制通过接触器改变电动机两相相序实现转向切换，并利用辅助触点实现自锁与电气互锁。</p>
           </div>
 
+          <div id="experimentRoot" class="experiment-root">
           <div id="placeholderCanvas" class="module-canvas"></div>
 
           <div id="forwardReverseCanvas" class="module-canvas hidden">
@@ -3064,14 +3033,51 @@
           </svg>
             </div>
           </div>
+          </div>
         </div>
+
+        <footer class="footerbar">
+          <div class="footer-playback-panel">
+            <div class="footer-playback-head">
+              <strong>展示原理（操作步骤回放）</strong>
+              <div class="footer-playback-actions">
+                <button id="showPrinciplePlayback" class="small-btn principle-play-btn" disabled>展示原理</button>
+                <div id="playbackControls" class="playback-controls">
+                  <button id="playbackPrev" class="small-btn" disabled>上一步</button>
+                  <button id="playbackToggle" class="small-btn" disabled>播放</button>
+                  <button id="playbackNext" class="small-btn" disabled>下一步</button>
+                </div>
+              </div>
+            </div>
+            <div class="footer-playback-meta">
+              <div class="playback-speed-row">
+                <span class="playback-speed-label">速度</span>
+                <div class="playback-speed-group">
+                  <button id="playbackSpeed05" class="small-btn">0.5x</button>
+                  <button id="playbackSpeed10" class="small-btn active">1x</button>
+                  <button id="playbackSpeed15" class="small-btn">1.5x</button>
+                </div>
+              </div>
+              <div class="note" id="currentStepText">当前步骤：待机，未播放教学回放。</div>
+            </div>
+          </div>
+          <div class="footer-legend hidden" id="footerLegend" aria-hidden="true">
+            <span class="legend-item"><i class="legend-line l1"></i>L1 黄色</span>
+            <span class="legend-item"><i class="legend-line l2"></i>L2 青色</span>
+            <span class="legend-item"><i class="legend-line l3"></i>L3 绿色</span>
+            <span class="legend-item"><i class="legend-line ctrl"></i>控制电源 红色</span>
+            <span class="legend-item"><i class="legend-line idle"></i>未通电线路 灰色</span>
+          </div>
+          <div class="footer-tip hidden" id="footerTip" aria-hidden="true">教学演示会按真实动作顺序展示按钮、控制回路、线圈、辅助触点和主回路的变化。</div>
+        </footer>
       </main>
 
       <aside class="inspector">
         <section id="operationControlCard" class="info-card operation-control-card">
           <h3>操作控制区</h3>
-          <button id="toggleQf" class="qf-btn">QF1 合闸</button>
           <div class="control-grid">
+            <button id="toggleQf" class="qf-btn">QF1 合闸</button>
+            <button id="openQf" class="qf-btn qf-open-action">QF1 分闸</button>
             <button id="pressSb1" class="ctrl-btn stop">
               <span class="chip"></span>
               <strong id="pressSb1Label">停止 SB1</strong>
@@ -3112,7 +3118,7 @@
           </div>
         </section>
 
-        <section class="info-card">
+        <section id="statusCard" class="info-card">
           <h3>当前状态</h3>
           <div class="status-grid">
             <div class="status-row"><span id="statusPowerLabel">电源</span><span id="statusPower" class="pill off">未合上</span></div>
@@ -3125,7 +3131,7 @@
           </div>
         </section>
 
-        <section class="info-card">
+        <section id="principleCard" class="info-card">
           <h3>动作原理</h3>
           <div class="box">
             <strong id="teachTitle">正反转控制原理</strong>
@@ -3139,7 +3145,7 @@
           </div>
         </section>
 
-        <section class="info-card">
+        <section id="aiPlaceholderCard" class="info-card">
           <h3>AI分析</h3>
           <div class="box">
             <strong>国产模型API占位</strong>
@@ -3202,42 +3208,18 @@
       </aside>
     </div>
 
-    <footer class="footerbar">
-      <div class="footer-playback-panel">
-        <div class="footer-playback-head">
-          <strong>展示原理 / 操作步骤回放</strong>
-          <div class="footer-playback-actions">
-            <button id="showPrinciplePlayback" class="small-btn principle-play-btn" disabled>展示原理</button>
-            <div id="playbackControls" class="playback-controls">
-              <button id="playbackPrev" class="small-btn" disabled>上一页</button>
-              <button id="playbackToggle" class="small-btn" disabled>播放</button>
-              <button id="playbackNext" class="small-btn" disabled>下一步</button>
-            </div>
-          </div>
-        </div>
-        <div class="footer-playback-meta">
-          <div class="playback-speed-row">
-            <span class="playback-speed-label">速度</span>
-            <div class="playback-speed-group">
-              <button id="playbackSpeed05" class="small-btn">0.5x</button>
-              <button id="playbackSpeed10" class="small-btn active">1x</button>
-              <button id="playbackSpeed15" class="small-btn">1.5x</button>
-            </div>
-          </div>
-          <div class="note" id="currentStepText">当前步骤：待机，未播放教学回放。</div>
-        </div>
-      </div>
-      <div class="footer-legend hidden" id="footerLegend" aria-hidden="true">
-        <span class="legend-item"><i class="legend-line l1"></i>L1 黄色</span>
-        <span class="legend-item"><i class="legend-line l2"></i>L2 青色</span>
-        <span class="legend-item"><i class="legend-line l3"></i>L3 绿色</span>
-        <span class="legend-item"><i class="legend-line ctrl"></i>控制电源 红色</span>
-        <span class="legend-item"><i class="legend-line idle"></i>未通电线路 灰色</span>
-      </div>
-      <div class="footer-tip hidden" id="footerTip" aria-hidden="true">教学演示会按真实动作顺序展示按钮、控制回路、线圈、辅助触点和主回路的变化。</div>
-    </footer>
   </div>
 
+  <script src="./src/schemas/module-contract.js"></script>
+  <script src="./src/platform/runtime/runtime-scope.js"></script>
+  <script src="./src/registry/module-registry.js"></script>
+  <script src="./src/platform/module-loader/module-loader.js"></script>
+  <script src="./src/chapters/chapter02/modules/legacy-module-adapter.js"></script>
+  <script src="./src/chapters/chapter02/modules/ch02_main_control/module.js"></script>
+  <script src="./src/chapters/chapter02/modules/ch02_jog/module.js"></script>
+  <script src="./src/chapters/chapter02/modules/ch02_continuous/module.js"></script>
+  <script src="./src/chapters/chapter02/modules/ch02_reverse/module.js"></script>
+  <script src="./src/platform/navigation/chapter-navigation.js"></script>
   <script>
     window.__FORWARD_REVERSE_BUILD_ID__ = "artifact-audit-2026-08-14-v1";
 
@@ -3302,6 +3284,9 @@
     const uiState = {
       currentModule: "main-control"
     };
+    let platformModuleRegistry = null;
+    let platformModuleLoader = null;
+    let platformNavigation = null;
 
     const state = {
       powerOn: false,
@@ -3538,6 +3523,8 @@
     };
 
     const refs = {
+      chapterNavigation: document.getElementById("chapterNavigation"),
+      experimentRoot: document.getElementById("experimentRoot"),
       navItems: Array.from(document.querySelectorAll(".module-nav-item")),
       currentModuleText: document.getElementById("currentModuleText"),
       stageModuleName: document.getElementById("stageModuleName"),
@@ -3549,6 +3536,7 @@
       boardShell: document.querySelector("#forwardReverseCanvas .board-shell"),
       boardSvg: document.getElementById("boardSvg"),
       toggleQf: document.getElementById("toggleQf"),
+      openQf: document.getElementById("openQf"),
       pressSb1: document.getElementById("pressSb1"),
       pressSb2: document.getElementById("pressSb2"),
       pressSb3: document.getElementById("pressSb3"),
@@ -11593,6 +11581,7 @@
 
       [
         refs.toggleQf,
+        refs.openQf,
         refs.pressSb1,
         refs.pressSb2,
         refs.pressSb3,
@@ -11661,9 +11650,11 @@
       if (!live) {
         refs.toggleQf.classList.remove("on");
         refs.toggleQf.textContent = "QF1 合闸";
+        refs.openQf.textContent = "QF1 分闸";
       } else if (state.calibration.enabled && !isSimulationSolverMode()) {
         refs.toggleQf.classList.remove("on");
         refs.toggleQf.textContent = "几何已锁定";
+        refs.openQf.textContent = "QF1 分闸";
       } else if (isSimulationSolverMode()) {
         const qfClosed = isContinuousControlModule()
           ? state.continuousControl.operationState.qf1 === "closed"
@@ -11672,10 +11663,13 @@
           : isJogControlModule()
             ? state.jogControl.operationState.qf === "closed"
             : state.operationState.qf1 === "closed";
+        const qfLabel = isJogControlModule() ? "QF" : "QF1";
         refs.toggleQf.classList.toggle("on", qfClosed);
-        refs.toggleQf.textContent = isJogControlModule()
-          ? (qfClosed ? "QF 分闸" : "QF 合闸")
-          : (qfClosed ? "QF1 分闸" : "QF1 合闸");
+        refs.openQf.classList.toggle("on", !qfClosed);
+        refs.toggleQf.textContent = `${qfLabel} 合闸`;
+        refs.openQf.textContent = `${qfLabel} 分闸`;
+        refs.toggleQf.disabled = qfClosed;
+        refs.openQf.disabled = !qfClosed;
       }
     }
 
@@ -12469,6 +12463,18 @@
           createReplayStep("系统恢复待命", "保护已恢复，但 KM 不会自动吸合，电动机保持停止。", "final", buildJogControlDisplayStateFromSnapshot(finalSnapshot))
         ]
       };
+    }
+
+    function isCurrentQfClosed() {
+      if (isContinuousControlModule()) return state.continuousControl.operationState.qf1 === "closed";
+      if (isMainControlModule()) return state.mainControl.operationState.qf1 === "closed";
+      if (isJogControlModule()) return state.jogControl.operationState.qf === "closed";
+      return state.operationState.qf1 === "closed";
+    }
+
+    function openQf1() {
+      if (!isLiveCircuitModule() || !isSimulationSolverMode() || !isCurrentQfClosed()) return;
+      toggleQf1();
     }
 
     function toggleQf1() {
@@ -13374,14 +13380,232 @@
     }
 
     function switchModule(moduleId) {
-      if (!moduleCatalog[moduleId]) return;
+      const definition = platformModuleRegistry?.resolve(moduleId);
+      const routeId = definition?.meta.routeId || moduleId;
+      if (!moduleCatalog[routeId]) return;
+      if (platformModuleLoader) {
+        platformModuleLoader.load(moduleId, { reason: "navigation" });
+        return;
+      }
       state.actionFeedback = {
-        ...getDefaultActionFeedback(moduleId),
+        ...getDefaultActionFeedback(routeId),
         actionStates: []
       };
-      uiState.currentModule = moduleId;
+      uiState.currentModule = routeId;
       resetCircuitViewportTransform();
       render();
+    }
+
+    function clearLegacyInteractionDom() {
+      document.querySelectorAll(".pressed").forEach((element) => element.classList.remove("pressed"));
+    }
+
+    function getLegacyRouteState(routeId) {
+      if (routeId === "main-control") {
+        return { operationState: state.mainControl.operationState, solver: state.mainControl.solver };
+      }
+      if (routeId === "jog-control") {
+        return { operationState: state.jogControl.operationState, solver: state.jogControl.solver };
+      }
+      if (routeId === "self-lock") {
+        return { operationState: state.continuousControl.operationState, solver: state.continuousControl.solver };
+      }
+      return { operationState: state.operationState, solver: state.solver };
+    }
+
+    function resetLegacyRouteState(routeId) {
+      cancelCurrentFlowReplay();
+      state.currentFlow.lastReplayDescriptor = null;
+      state.currentFlow.activeStep = null;
+      if (routeId === "main-control") resetMainControlSolverState();
+      else if (routeId === "jog-control") resetJogControlSolverState();
+      else if (routeId === "self-lock") resetContinuousControlSolverState();
+      else resetSolverState();
+      clearLegacyInteractionDom();
+      return JSON.parse(JSON.stringify(getLegacyRouteState(routeId)));
+    }
+
+    function normalizeLegacySolverResult(routeId) {
+      const { operationState, solver } = getLegacyRouteState(routeId);
+      const base = window.ECTPPlatform.contracts.createEmptySolverResult();
+      const stableDeviceStates = solver.stableControlState && typeof solver.stableControlState === "object"
+        ? { ...solver.stableControlState }
+        : { controlState: solver.stableControlState ?? null };
+      const protectionStates = Object.fromEntries(
+        Object.entries(operationState).filter(([key]) => key.startsWith("fr"))
+      );
+      return {
+        ...base,
+        stableDeviceStates,
+        edgeStates: solver.edgeStates ? { ...solver.edgeStates } : {},
+        activeMainWireIds: [...(solver.activeMainWireIds || [])],
+        activeControlWireIds: [...(solver.activeControlWireIds || [])],
+        partialWireIds: [...(solver.partialControlWireIds || [])],
+        motorStates: solver.motorStates
+          ? JSON.parse(JSON.stringify(solver.motorStates))
+          : { motorState: solver.motorState ?? null, motorRunning: solver.motorRunning ?? false },
+        protectionStates,
+        converged: solver.converged !== false,
+        iterationCount: solver.iterationCount || 0,
+        lastAction: solver.lastAction || {},
+        extension: {
+          activeControlEdgeIds: [...(solver.activeControlEdgeIds || [])],
+          activeMainEdgeIds: [...(solver.activeMainEdgeIds || [])],
+          controlSupplyBoundary: solver.controlSupplyBoundary || null
+        }
+      };
+    }
+
+    function getLegacyCircuitData(routeId) {
+      if (routeId === "main-control") {
+        return Object.freeze({
+          geometryLockId: MAIN_CONTROL_GEOMETRY_LOCK_ID,
+          reference: { href: MAIN_CONTROL_REFERENCE_HREF, width: MAIN_CONTROL_IMAGE_WIDTH, height: MAIN_CONTROL_IMAGE_HEIGHT },
+          ports: mainControlPortMap,
+          junctions: mainControlJunctions,
+          components: mainControlComponentBBoxes,
+          wires: mainControlWires,
+          deviceEdges: mainControlDeviceEdgeDefs
+        });
+      }
+      if (routeId === "jog-control") {
+        return Object.freeze({
+          geometryLockId: JOG_CONTROL_GEOMETRY_LOCK_ID,
+          reference: { href: JOG_CONTROL_REFERENCE_HREF, width: JOG_CONTROL_IMAGE_WIDTH, height: JOG_CONTROL_IMAGE_HEIGHT },
+          ports: jogControlPortMap,
+          junctions: jogControlJunctions,
+          components: jogControlComponentBBoxes,
+          wires: jogControlWires,
+          deviceEdges: jogControlDeviceEdgeDefs
+        });
+      }
+      if (routeId === "self-lock") {
+        return Object.freeze({
+          geometryLockId: CONTINUOUS_CONTROL_GEOMETRY_LOCK_ID,
+          reference: { href: CONTINUOUS_CONTROL_REFERENCE_HREF, width: CONTINUOUS_CONTROL_IMAGE_WIDTH, height: CONTINUOUS_CONTROL_IMAGE_HEIGHT },
+          ports: continuousControlPortMap,
+          junctions: continuousControlJunctions,
+          components: continuousControlComponentBBoxes,
+          wires: continuousControlWires,
+          deviceEdges: continuousControlDeviceEdgeDefs
+        });
+      }
+      return Object.freeze({
+        geometryLockId: FORWARD_REVERSE_GEOMETRY_LOCK_ID,
+        reference: { href: FORWARD_REVERSE_REFERENCE_HREF, width: CALIBRATION_IMAGE_WIDTH, height: CALIBRATION_IMAGE_HEIGHT },
+        ports: calibrationPortMap,
+        junctions: calibrationJunctions,
+        components: calibrationComponentBBoxes,
+        wires: calibrationWires,
+        deviceEdges: deviceEdgeDefs
+      });
+    }
+
+    function validateLegacyGeometry(routeId) {
+      if (routeId === "main-control") return validateMainControlGeometryData();
+      if (routeId === "jog-control") return validateJogControlGeometryData();
+      if (routeId === "self-lock") return validateContinuousControlGeometryData();
+      return validateCalibrationData();
+    }
+
+    function runLegacyModuleTests(routeId) {
+      if (routeId === "main-control") return runMainControlSolverTests();
+      if (routeId === "jog-control") return runJogControlSolverTests();
+      if (routeId === "self-lock") return runContinuousControlSolverTests();
+      return runSolverTests();
+    }
+
+    function solveLegacyRoute(routeId, actionMessage = "module contract solve") {
+      if (routeId === "main-control") recomputeMainControlSolver(actionMessage);
+      else if (routeId === "jog-control") recomputeJogControlSolver(actionMessage);
+      else if (routeId === "self-lock") recomputeContinuousControlSolver(actionMessage);
+      else recomputeElectricalSolver(actionMessage);
+      return normalizeLegacySolverResult(routeId);
+    }
+
+    function createLegacyHooks(routeId) {
+      return Object.freeze({
+        createInitialState: () => resetLegacyRouteState(routeId),
+        dispatchAction: () => getLegacyRouteState(routeId),
+        solve: (actionMessage) => solveLegacyRoute(routeId, actionMessage),
+        normalizeSolverResult: () => normalizeLegacySolverResult(routeId),
+        getOperationViewModel: () => JSON.parse(JSON.stringify(getLegacyRouteState(routeId).operationState)),
+        getStatusViewModel: () => normalizeLegacySolverResult(routeId),
+        buildTeachingFeedback: () => JSON.parse(JSON.stringify(state.actionFeedback)),
+        buildReplaySteps: () => JSON.parse(JSON.stringify(state.currentFlow.lastReplayDescriptor?.steps || [])),
+        mount: () => undefined,
+        render: () => render(),
+        reset: () => resetLegacyRouteState(routeId),
+        pause: () => cancelCurrentFlowReplay(),
+        resume: () => undefined,
+        unmount: () => {
+          cancelCurrentFlowReplay();
+          clearLegacyInteractionDom();
+        },
+        validateGeometry: () => validateLegacyGeometry(routeId),
+        runTests: () => runLegacyModuleTests(routeId)
+      });
+    }
+
+    function initializePlatformRuntime() {
+      const platform = window.ECTPPlatform;
+      if (!platform?.contracts || !platform?.registry || !platform?.loader || !platform?.adapters) {
+        console.error("Platform runtime files did not load; falling back to legacy shell.");
+        render();
+        return;
+      }
+
+      platformModuleRegistry = platform.registry.createModuleRegistry(platform.contracts);
+      const registrations = [
+        [platform.moduleDefinitions.createCh02MainControl, "main-control"],
+        [platform.moduleDefinitions.createCh02Jog, "jog-control"],
+        [platform.moduleDefinitions.createCh02Continuous, "self-lock"],
+        [platform.moduleDefinitions.createCh02Reverse, "forward-reverse"]
+      ];
+      registrations.forEach(([createDefinition, routeId]) => {
+        platformModuleRegistry.register(createDefinition({
+          circuitData: getLegacyCircuitData(routeId),
+          hooks: createLegacyHooks(routeId)
+        }));
+      });
+
+      platformNavigation = platform.navigation.mountChapterNavigation({
+        container: refs.chapterNavigation,
+        registry: platformModuleRegistry,
+        activeRouteId: uiState.currentModule,
+        onSelect: switchModule
+      });
+      refs.navItems = platformNavigation.getModuleButtons();
+
+      platformModuleLoader = platform.loader.createModuleLoader({
+        registry: platformModuleRegistry,
+        mountRoot: refs.experimentRoot,
+        services: Object.freeze({ setActionFeedback }),
+        setActiveModuleId: (routeId) => {
+          uiState.currentModule = routeId;
+          state.actionFeedback = {
+            ...getDefaultActionFeedback(routeId),
+            actionStates: []
+          };
+          resetCircuitViewportTransform();
+          platformNavigation.updateActive(routeId);
+        }
+      });
+
+      platformModuleLoader.load(uiState.currentModule, { force: true, reason: "platform-start" });
+      window.platformApi = Object.freeze({
+        switchModule,
+        resetCurrent: () => platformModuleLoader.resetCurrent(),
+        getDiagnostics: () => ({
+          registry: platformModuleRegistry.diagnostics(),
+          loader: platformModuleLoader.diagnostics()
+        }),
+        getCurrentContractReport: () => {
+          const current = platformModuleLoader.getCurrent();
+          return current ? platform.contracts.validateModuleContract(current.instance) : null;
+        },
+        getCurrentSolverResult: () => normalizeLegacySolverResult(uiState.currentModule)
+      });
     }
 
     function applyCalibrationQueryPreset() {
@@ -13521,6 +13745,7 @@
     });
 
     refs.toggleQf.addEventListener("click", toggleQf1);
+    refs.openQf.addEventListener("click", openQf1);
     refs.pressSb1.addEventListener("click", handlePrimaryActionButtonClick);
     refs.pressSb2.addEventListener("click", handleSecondaryActionButtonClick);
     refs.pressSb3.addEventListener("click", handleTertiaryActionButtonClick);
@@ -13873,7 +14098,7 @@
     resetContinuousControlSolverState();
     resetJogControlSolverState();
     applyCalibrationQueryPreset();
-    render();
+    initializePlatformRuntime();
   </script>
 </body>
 </html>

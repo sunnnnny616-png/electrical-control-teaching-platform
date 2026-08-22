@@ -1,5 +1,22 @@
 # PROJECT_HANDOFF_MAP
 
+> 2026-08-22 状态：第一阶段 Platform Framework v1 已接入。下面 A-L 保留为基线审计地图，其中旧行号不再是当前精确行号；新开发应优先使用本节路径与 `docs/平台框架改造_第一阶段实施记录_v0.1.md`。
+
+## 0. Platform Framework v1 当前入口
+
+- 页面入口与成熟电路实现：`index.html`
+- Module Contract：`src/schemas/module-contract.js`
+- Registry：`src/registry/module-registry.js`
+- Module Loader：`src/platform/module-loader/module-loader.js`
+- Runtime Scope：`src/platform/runtime/runtime-scope.js`
+- 章节导航：`src/platform/navigation/chapter-navigation.js`
+- Platform Shell 样式：`src/platform/shell/platform-shell-v1.css`
+- Legacy Adapter：`src/chapters/chapter02/modules/legacy-module-adapter.js`
+- 第二章模块定义：`src/chapters/chapter02/modules/ch02_*/module.js`
+- 实施与回归记录：`docs/平台框架改造_第一阶段实施记录_v0.1.md`
+
+当前四个模块仍复用 `index.html` 中的成熟 topology、Solver、Current Flow 与 SVG 渲染；新增文件是接入层，不代表已迁走电路实现。
+
 ## A. 当前入口文件
 
 - 主 HTML / 主 JS / 主 CSS：`index.html`
