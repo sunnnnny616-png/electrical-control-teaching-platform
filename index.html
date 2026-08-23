@@ -3214,7 +3214,10 @@
   <script src="./src/platform/runtime/runtime-scope.js"></script>
   <script src="./src/registry/module-registry.js"></script>
   <script src="./src/platform/module-loader/module-loader.js"></script>
+  <script src="./src/platform/module-adapter/facade-module-adapter.js"></script>
   <script src="./src/chapters/chapter02/modules/legacy-module-adapter.js"></script>
+  <script src="./src/chapters/chapter02/modules/ch02_jog/facade.js"></script>
+  <script src="./src/chapters/chapter02/modules/ch02_reverse/facade.js"></script>
   <script src="./src/chapters/chapter02/modules/ch02_main_control/module.js"></script>
   <script src="./src/chapters/chapter02/modules/ch02_jog/module.js"></script>
   <script src="./src/chapters/chapter02/modules/ch02_continuous/module.js"></script>
@@ -11549,6 +11552,18 @@
     function updateModuleShell() {
       const module = moduleCatalog[uiState.currentModule];
       const activeRef = getActiveReferenceConfig();
+      [
+        refs.statusPower,
+        refs.statusKi1,
+        refs.statusKi2,
+        refs.statusMotor,
+        refs.statusProtection,
+        refs.statusMode,
+        refs.statusPhase
+      ].forEach((pill) => {
+        const statusRow = pill.closest(".status-row");
+        if (statusRow) statusRow.classList.remove("hidden");
+      });
 
       refs.currentModuleText.textContent = module.name;
       refs.stageModuleName.textContent = module.name;
@@ -11594,6 +11609,12 @@
       ].forEach((button) => {
         button.disabled = !live || (state.calibration.enabled && !isSimulationSolverMode());
       });
+
+      const facadeOperationViewModel = getCurrentFacadeInstance()?.getOperationViewModel();
+      if (facadeOperationViewModel) {
+        renderFacadeOperationViewModel(facadeOperationViewModel);
+        return;
+      }
 
       [
         refs.previewInitial,
@@ -11658,12 +11679,8 @@
       } else if (isSimulationSolverMode()) {
         const qfClosed = isContinuousControlModule()
           ? state.continuousControl.operationState.qf1 === "closed"
-          : isMainControlModule()
-          ? state.mainControl.operationState.qf1 === "closed"
-          : isJogControlModule()
-            ? state.jogControl.operationState.qf === "closed"
-            : state.operationState.qf1 === "closed";
-        const qfLabel = isJogControlModule() ? "QF" : "QF1";
+          : state.mainControl.operationState.qf1 === "closed";
+        const qfLabel = "QF1";
         refs.toggleQf.classList.toggle("on", qfClosed);
         refs.openQf.classList.toggle("on", !qfClosed);
         refs.toggleQf.textContent = `${qfLabel} 合闸`;
@@ -11736,6 +11753,11 @@
     }
 
     function buildActionStateModel() {
+      const facadeInstance = getCurrentFacadeInstance();
+      if (facadeInstance) {
+        return JSON.parse(JSON.stringify(facadeInstance.getOperationViewModel().actionStates || []));
+      }
+
       if (isContinuousControlModule()) {
         const op = state.continuousControl.operationState;
         const solver = state.continuousControl.solver;
@@ -11761,29 +11783,6 @@
           { id: "fr1_reset", label: "FR1 复位", currentState: op.fr1, availableTransitions: [op.fr1 === "overload" ? "reset" : "show_normal_hint"], onAction: "resetFr", feedbackText: op.fr1 === "overload" ? "FR1 可复位到待命状态。" : "FR1 当前处于正常状态。" },
           { id: "fr2_trip", label: "FR2 过载", currentState: op.fr2, availableTransitions: [op.fr2 === "overload" ? "show_overload_hint" : "trip"], onAction: "tripFr2", feedbackText: op.fr2 === "overload" ? "FR2 已处于动作状态。" : "FR2 仅保护 2M 支路。" },
           { id: "fr2_reset", label: "FR2 复位", currentState: op.fr2, availableTransitions: [op.fr2 === "overload" ? "reset" : "show_normal_hint"], onAction: "resetFr2", feedbackText: op.fr2 === "overload" ? "FR2 可复位到待命状态。" : "FR2 当前处于正常状态。" }
-        ];
-      }
-
-      if (isJogControlModule()) {
-        const op = state.jogControl.operationState;
-        const solver = state.jogControl.solver;
-        return [
-          { id: "qf", label: "QF", currentState: op.qf, availableTransitions: [op.qf === "closed" ? "open" : "close"], onAction: "toggleQf1", feedbackText: op.qf === "closed" ? "QF 当前已合闸。" : "QF 当前断开。" },
-          { id: "sb", label: "SB 点动", currentState: op.sb, availableTransitions: [op.sb === "pressed" ? "release" : "press"], onAction: "pressJogControlButton", feedbackText: solver.motorRunning ? "点动按钮按住时电机运行，松开后立即停止。" : "点动按钮是瞬时动作，不能锁存为持续运行。" },
-          { id: "fr_trip", label: "FR 过载", currentState: op.fr, availableTransitions: [op.fr === "overload" ? "show_overload_hint" : "trip"], onAction: "tripFr", feedbackText: op.fr === "overload" ? "FR 已处于动作状态。" : "FR 动作后会切断 KM 控制回路。" },
-          { id: "fr_reset", label: "FR 复位", currentState: op.fr, availableTransitions: [op.fr === "overload" ? "reset" : "show_normal_hint"], onAction: "resetFr", feedbackText: op.fr === "overload" ? "FR 可复位回到待机状态。" : "FR 当前处于正常状态。" }
-        ];
-      }
-
-      if (isForwardReverseModule()) {
-        const op = state.operationState;
-        return [
-          { id: "qf1", label: "QF1", currentState: op.qf1, availableTransitions: [op.qf1 === "closed" ? "open" : "close"], onAction: "toggleQf1", feedbackText: op.qf1 === "closed" ? "QF1 当前已合闸。" : "QF1 当前断开。" },
-          { id: "sb1", label: "停止 SB1", currentState: state.motorState, availableTransitions: [state.motorState === "stopped" ? "show_stopped_hint" : "stop"], onAction: "stopMotor", feedbackText: state.motorState === "stopped" ? "设备当前已经停止。" : "SB1 用于停止当前转向运行。" },
-          { id: "sb2", label: "正转启动 SB2", currentState: state.motorState, availableTransitions: [state.motorState === "forward" ? "show_forward_hint" : "start_forward"], onAction: "startForward", feedbackText: state.motorState === "forward" ? "电机已经处于正转状态。" : "SB2 会尝试建立正转回路。" },
-          { id: "sb3", label: "反转启动 SB3", currentState: state.motorState, availableTransitions: [state.motorState === "reverse" ? "show_reverse_hint" : "start_reverse"], onAction: "startReverse", feedbackText: state.motorState === "reverse" ? "电机已经处于反转状态。" : "SB3 会尝试建立反转回路。" },
-          { id: "fr1_trip", label: "FR1 过载", currentState: op.fr1, availableTransitions: [op.fr1 === "overload" ? "show_overload_hint" : "trip"], onAction: "tripFr", feedbackText: op.fr1 === "overload" ? "FR1 已处于动作状态。" : "FR1 动作后会释放当前接触器。" },
-          { id: "fr1_reset", label: "FR1 复位", currentState: op.fr1, availableTransitions: [op.fr1 === "overload" ? "reset" : "show_normal_hint"], onAction: "resetFr", feedbackText: op.fr1 === "overload" ? "FR1 可复位回到待命状态。" : "FR1 当前处于正常状态。" }
         ];
       }
 
@@ -12015,6 +12014,7 @@
 
       if (isJogControlModule()) {
         renderJogControlModule();
+        renderCurrentFacadeStatusViewModel();
         return;
       }
 
@@ -12040,6 +12040,7 @@
         updateCalibrationPanels();
       }
       scheduleFormalLabelCollisionAudit();
+      renderCurrentFacadeStatusViewModel();
     }
 
     function setJogControlOperationState(patch, actionMessage) {
@@ -12465,15 +12466,74 @@
       };
     }
 
+    function dispatchCurrentFacadeAction(type, payload = {}, source = "platform-shell") {
+      const facadeInstance = getCurrentFacadeInstance();
+      if (!facadeInstance) return null;
+      const action = window.ECTPPlatform.contracts.createAction(type, payload, source);
+      return facadeInstance.dispatchAction(action);
+    }
+
+    function dispatchCurrentFacadeControl(slot, phase = "action", payload = {}) {
+      const facadeInstance = getCurrentFacadeInstance();
+      if (!facadeInstance) return false;
+      const viewModel = facadeInstance.getOperationViewModel();
+      const control = viewModel.controls.find((item) => item.slot === slot && item.visible !== false);
+      let actionType = control && control.action;
+      if (phase === "press") actionType = control && control.pressAction;
+      if (phase === "release") actionType = control && control.releaseAction;
+      if (!actionType) return false;
+      dispatchCurrentFacadeAction(actionType, payload);
+      return true;
+    }
+
+    function handleCloseQfButtonClick() {
+      if (dispatchCurrentFacadeAction("POWER_CLOSE")) return;
+      toggleQf1();
+    }
+
+    function handlePrimaryPlatformAction() {
+      if (dispatchCurrentFacadeControl("primary")) return;
+      handlePrimaryActionButtonClick();
+    }
+
+    function handleSecondaryPlatformAction() {
+      if (dispatchCurrentFacadeControl("secondary")) return;
+      handleSecondaryActionButtonClick();
+    }
+
+    function handleTertiaryPlatformAction() {
+      if (dispatchCurrentFacadeControl("tertiary")) return;
+      handleTertiaryActionButtonClick();
+    }
+
+    function handleProtectionPlatformAction() {
+      const facadeInstance = getCurrentFacadeInstance();
+      const viewModel = facadeInstance && facadeInstance.getOperationViewModel();
+      const actionType = viewModel && viewModel.protection && viewModel.protection.toggleAction;
+      if (actionType) return dispatchCurrentFacadeAction(actionType);
+      return handleTripFrButtonClick();
+    }
+
+    function handleProtectionResetPlatformAction() {
+      const facadeInstance = getCurrentFacadeInstance();
+      const viewModel = facadeInstance && facadeInstance.getOperationViewModel();
+      const actionType = viewModel && viewModel.protection && viewModel.protection.resetAction;
+      if (actionType) return dispatchCurrentFacadeAction(actionType);
+      return resetFr();
+    }
+
     function isCurrentQfClosed() {
+      const facadeInstance = getCurrentFacadeInstance();
+      const viewModel = facadeInstance && facadeInstance.getOperationViewModel();
+      if (viewModel) return Boolean(viewModel.power.closed);
       if (isContinuousControlModule()) return state.continuousControl.operationState.qf1 === "closed";
       if (isMainControlModule()) return state.mainControl.operationState.qf1 === "closed";
-      if (isJogControlModule()) return state.jogControl.operationState.qf === "closed";
-      return state.operationState.qf1 === "closed";
+      return false;
     }
 
     function openQf1() {
       if (!isLiveCircuitModule() || !isSimulationSolverMode() || !isCurrentQfClosed()) return;
+      if (dispatchCurrentFacadeAction("POWER_OPEN")) return;
       toggleQf1();
     }
 
@@ -13400,17 +13460,79 @@
       document.querySelectorAll(".pressed").forEach((element) => element.classList.remove("pressed"));
     }
 
+    function getCurrentFacadeInstance() {
+      const current = platformModuleLoader && platformModuleLoader.getCurrent();
+      if (!current || current.definition.meta.integrationMode !== "facade-v1") return null;
+      return current.instance;
+    }
+
+    function renderFacadeOperationViewModel(viewModel) {
+      const slotMap = {
+        primary: { button: refs.pressSb1, label: refs.pressSb1Label, state: refs.pressSb1State },
+        secondary: { button: refs.pressSb2, label: refs.pressSb2Label, state: refs.pressSb2State },
+        tertiary: { button: refs.pressSb3, label: refs.pressSb3Label, state: refs.pressSb3State },
+        quaternary: { button: refs.pressSb4, label: refs.pressSb4Label, state: refs.pressSb4State }
+      };
+      const controlsBySlot = Object.fromEntries((viewModel.controls || []).map((control) => [control.slot, control]));
+      Object.entries(slotMap).forEach(([slot, binding]) => {
+        const control = controlsBySlot[slot] || { visible: false };
+        binding.button.classList.toggle("hidden", control.visible === false);
+        binding.button.classList.remove("stop", "forward", "reverse");
+        if (control.buttonClass) binding.button.classList.add(control.buttonClass);
+        if (control.label) binding.label.textContent = control.label;
+        if (binding.state) binding.state.textContent = control.stateText || "";
+        binding.button.disabled = control.visible === false
+          || Boolean(control.disabled)
+          || (state.calibration.enabled && !isSimulationSolverMode());
+      });
+
+      refs.toggleQf.textContent = viewModel.power.closeLabel;
+      refs.openQf.textContent = viewModel.power.openLabel;
+      refs.toggleQf.classList.toggle("on", Boolean(viewModel.power.closed));
+      refs.openQf.classList.toggle("on", !viewModel.power.closed);
+      refs.toggleQf.disabled = !viewModel.power.closeEnabled;
+      refs.openQf.disabled = !viewModel.power.openEnabled;
+
+      const protection = viewModel.protection || {};
+      refs.tripFr.classList.remove("hidden");
+      refs.resetFr.classList.remove("hidden");
+      refs.tripFr2.classList.add("hidden");
+      refs.resetFr2.classList.add("hidden");
+      refs.tripFrLabel.textContent = protection.label || "保护动作";
+      refs.resetFr.textContent = protection.resetLabel || "保护复位";
+    }
+
+    function renderCurrentFacadeStatusViewModel() {
+      const facadeInstance = getCurrentFacadeInstance();
+      if (!facadeInstance) return;
+      const viewModel = facadeInstance.getStatusViewModel();
+      const statusBindings = [
+        { label: refs.statusPowerLabel, pill: refs.statusPower },
+        { label: refs.statusKi1Label, pill: refs.statusKi1 },
+        { label: refs.statusKi2Label, pill: refs.statusKi2 },
+        { label: refs.statusMotorLabel, pill: refs.statusMotor },
+        { label: refs.statusProtectionLabel, pill: refs.statusProtection },
+        { label: refs.statusModeLabel, pill: refs.statusMode },
+        { label: refs.statusPhaseLabel, pill: refs.statusPhase }
+      ];
+      statusBindings.forEach((binding, index) => {
+        const row = viewModel.rows[index];
+        const statusRow = binding.pill.closest(".status-row");
+        if (statusRow) statusRow.classList.toggle("hidden", !row);
+        if (!row) return;
+        binding.label.textContent = row.label;
+        setPill(binding.pill, row.value, row.tone || "off");
+      });
+    }
+
     function getLegacyRouteState(routeId) {
       if (routeId === "main-control") {
         return { operationState: state.mainControl.operationState, solver: state.mainControl.solver };
       }
-      if (routeId === "jog-control") {
-        return { operationState: state.jogControl.operationState, solver: state.jogControl.solver };
-      }
       if (routeId === "self-lock") {
         return { operationState: state.continuousControl.operationState, solver: state.continuousControl.solver };
       }
-      return { operationState: state.operationState, solver: state.solver };
+      throw new Error(`Route ${routeId} uses facade-v1 and is not available through the legacy state bridge.`);
     }
 
     function resetLegacyRouteState(routeId) {
@@ -13418,16 +13540,16 @@
       state.currentFlow.lastReplayDescriptor = null;
       state.currentFlow.activeStep = null;
       if (routeId === "main-control") resetMainControlSolverState();
-      else if (routeId === "jog-control") resetJogControlSolverState();
       else if (routeId === "self-lock") resetContinuousControlSolverState();
-      else resetSolverState();
+      else throw new Error(`Route ${routeId} must reset through its facade port.`);
       clearLegacyInteractionDom();
       return JSON.parse(JSON.stringify(getLegacyRouteState(routeId)));
     }
 
     function normalizeLegacySolverResult(routeId) {
       const { operationState, solver } = getLegacyRouteState(routeId);
-      const base = window.ECTPPlatform.contracts.createEmptySolverResult();
+      const legacyModuleId = routeId === "main-control" ? "ch02_main_control" : "ch02_continuous";
+      const base = window.ECTPPlatform.contracts.createEmptySolverResult(legacyModuleId);
       const stableDeviceStates = solver.stableControlState && typeof solver.stableControlState === "object"
         ? { ...solver.stableControlState }
         : { controlState: solver.stableControlState ?? null };
@@ -13517,15 +13639,15 @@
 
     function solveLegacyRoute(routeId, actionMessage = "module contract solve") {
       if (routeId === "main-control") recomputeMainControlSolver(actionMessage);
-      else if (routeId === "jog-control") recomputeJogControlSolver(actionMessage);
       else if (routeId === "self-lock") recomputeContinuousControlSolver(actionMessage);
-      else recomputeElectricalSolver(actionMessage);
+      else throw new Error(`Route ${routeId} must solve through its facade port.`);
       return normalizeLegacySolverResult(routeId);
     }
 
     function createLegacyHooks(routeId) {
       return Object.freeze({
         createInitialState: () => resetLegacyRouteState(routeId),
+        getStateSnapshot: () => JSON.parse(JSON.stringify(getLegacyRouteState(routeId))),
         dispatchAction: () => getLegacyRouteState(routeId),
         solve: (actionMessage) => solveLegacyRoute(routeId, actionMessage),
         normalizeSolverResult: () => normalizeLegacySolverResult(routeId),
@@ -13547,9 +13669,95 @@
       });
     }
 
+    function cloneFacadePortValue(value) {
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function createJogModulePort() {
+      function readRawState() {
+        const solver = cloneFacadePortValue(state.jogControl.solver);
+        return {
+          operationState: cloneJogControlOperationState(),
+          solver
+        };
+      }
+      return Object.freeze({
+        readRawState,
+        reset: () => {
+          resetJogControlSolverState();
+          return readRawState();
+        },
+        solve: (actionMessage) => {
+          recomputeJogControlSolver(actionMessage);
+          return readRawState();
+        },
+        togglePower: () => toggleQf1(),
+        pressJog: () => pressJogControlButton(),
+        releaseJog: (reason) => releaseJogControlButton(reason),
+        toggleProtection: () => handleTripFrButtonClick(),
+        resetProtection: () => resetFr(),
+        render: () => render(),
+        pause: () => cancelCurrentFlowReplay(),
+        unmount: () => {
+          cancelCurrentFlowReplay();
+          clearLegacyInteractionDom();
+        },
+        validateGeometry: () => validateJogControlGeometryData(),
+        runTests: () => runJogControlSolverTests(),
+        getFeedback: () => cloneFacadePortValue(state.actionFeedback),
+        getReplaySteps: () => cloneFacadePortValue(
+          state.currentFlow.lastReplayDescriptor && state.currentFlow.lastReplayDescriptor.steps || []
+        )
+      });
+    }
+
+    function createReverseModulePort() {
+      function readRawState() {
+        return {
+          operationState: cloneOperationState(),
+          stableControlState: cloneFacadePortValue(state.solver.stableControlState || {}),
+          solver: cloneFacadePortValue(state.solver)
+        };
+      }
+      return Object.freeze({
+        readRawState,
+        reset: () => {
+          resetSolverState();
+          return readRawState();
+        },
+        solve: (actionMessage) => {
+          recomputeElectricalSolver(actionMessage);
+          return readRawState();
+        },
+        togglePower: () => toggleQf1(),
+        pressStop: () => handlePrimaryActionButtonClick(),
+        pressForward: () => handleSecondaryActionButtonClick(),
+        pressReverse: () => handleTertiaryActionButtonClick(),
+        toggleProtection: () => handleTripFrButtonClick(),
+        resetProtection: () => resetFr(),
+        render: () => render(),
+        pause: () => cancelCurrentFlowReplay(),
+        unmount: () => {
+          cancelCurrentFlowReplay();
+          clearLegacyInteractionDom();
+        },
+        validateGeometry: () => validateCalibrationData(),
+        runTests: () => runSolverTests(),
+        getFeedback: () => cloneFacadePortValue(state.actionFeedback),
+        getReplaySteps: () => cloneFacadePortValue(
+          state.currentFlow.lastReplayDescriptor && state.currentFlow.lastReplayDescriptor.steps || []
+        )
+      });
+    }
+
     function initializePlatformRuntime() {
       const platform = window.ECTPPlatform;
-      if (!platform?.contracts || !platform?.registry || !platform?.loader || !platform?.adapters) {
+      if (!platform?.contracts
+        || !platform?.registry
+        || !platform?.loader
+        || !platform?.adapters
+        || !platform?.facadeAdapter
+        || !platform?.moduleFacades) {
         console.error("Platform runtime files did not load; falling back to legacy shell.");
         render();
         return;
@@ -13557,17 +13765,24 @@
 
       platformModuleRegistry = platform.registry.createModuleRegistry(platform.contracts);
       const registrations = [
-        [platform.moduleDefinitions.createCh02MainControl, "main-control"],
-        [platform.moduleDefinitions.createCh02Jog, "jog-control"],
-        [platform.moduleDefinitions.createCh02Continuous, "self-lock"],
-        [platform.moduleDefinitions.createCh02Reverse, "forward-reverse"]
+        platform.moduleDefinitions.createCh02MainControl({
+          circuitData: getLegacyCircuitData("main-control"),
+          hooks: createLegacyHooks("main-control")
+        }),
+        platform.moduleDefinitions.createCh02Jog({
+          circuitData: getLegacyCircuitData("jog-control"),
+          port: createJogModulePort()
+        }),
+        platform.moduleDefinitions.createCh02Continuous({
+          circuitData: getLegacyCircuitData("self-lock"),
+          hooks: createLegacyHooks("self-lock")
+        }),
+        platform.moduleDefinitions.createCh02Reverse({
+          circuitData: getLegacyCircuitData("forward-reverse"),
+          port: createReverseModulePort()
+        })
       ];
-      registrations.forEach(([createDefinition, routeId]) => {
-        platformModuleRegistry.register(createDefinition({
-          circuitData: getLegacyCircuitData(routeId),
-          hooks: createLegacyHooks(routeId)
-        }));
-      });
+      registrations.forEach((definition) => platformModuleRegistry.register(definition));
 
       platformNavigation = platform.navigation.mountChapterNavigation({
         container: refs.chapterNavigation,
@@ -13596,15 +13811,45 @@
       window.platformApi = Object.freeze({
         switchModule,
         resetCurrent: () => platformModuleLoader.resetCurrent(),
-        getDiagnostics: () => ({
-          registry: platformModuleRegistry.diagnostics(),
-          loader: platformModuleLoader.diagnostics()
-        }),
+        dispatchAction: (type, payload = {}, source = "platform-api") => {
+          const current = platformModuleLoader.getCurrent();
+          if (!current) return null;
+          return current.instance.dispatchAction(platform.contracts.createAction(type, payload, source));
+        },
+        getDiagnostics: () => {
+          const current = platformModuleLoader.getCurrent();
+          return {
+            contractVersion: platform.contracts.moduleContractVersion,
+            facadeSchemaVersion: platform.contracts.facadeSchemaVersion,
+            integrationMode: current && current.definition.meta.integrationMode || "legacy-v1",
+            registry: platformModuleRegistry.diagnostics(),
+            loader: platformModuleLoader.diagnostics()
+          };
+        },
         getCurrentContractReport: () => {
           const current = platformModuleLoader.getCurrent();
           return current ? platform.contracts.validateModuleContract(current.instance) : null;
         },
-        getCurrentSolverResult: () => normalizeLegacySolverResult(uiState.currentModule)
+        getCurrentStateSnapshot: () => {
+          const current = platformModuleLoader.getCurrent();
+          return current ? current.instance.getStateSnapshot() : null;
+        },
+        getCurrentSolverResult: () => {
+          const current = platformModuleLoader.getCurrent();
+          return current ? current.instance.normalizeSolverResult() : null;
+        },
+        getCurrentOperationViewModel: () => {
+          const current = platformModuleLoader.getCurrent();
+          return current ? current.instance.getOperationViewModel() : null;
+        },
+        getCurrentStatusViewModel: () => {
+          const current = platformModuleLoader.getCurrent();
+          return current ? current.instance.getStatusViewModel() : null;
+        },
+        getCurrentTeachingFeedback: () => {
+          const current = platformModuleLoader.getCurrent();
+          return current ? current.instance.buildTeachingFeedback() : null;
+        }
       });
     }
 
@@ -13744,32 +13989,28 @@
       render();
     });
 
-    refs.toggleQf.addEventListener("click", toggleQf1);
+    refs.toggleQf.addEventListener("click", handleCloseQfButtonClick);
     refs.openQf.addEventListener("click", openQf1);
-    refs.pressSb1.addEventListener("click", handlePrimaryActionButtonClick);
-    refs.pressSb2.addEventListener("click", handleSecondaryActionButtonClick);
-    refs.pressSb3.addEventListener("click", handleTertiaryActionButtonClick);
+    refs.pressSb1.addEventListener("click", handlePrimaryPlatformAction);
+    refs.pressSb2.addEventListener("click", handleSecondaryPlatformAction);
+    refs.pressSb3.addEventListener("click", handleTertiaryPlatformAction);
     refs.pressSb4.addEventListener("click", handleFourthActionButtonClick);
     refs.pressSb2.addEventListener("pointerdown", (event) => {
-      if (!isJogControlModule()) return;
+      if (!dispatchCurrentFacadeControl("secondary", "press", { reason: "SB pointerdown" })) return;
       event.preventDefault();
-      pressJogControlButton();
     });
     refs.pressSb2.addEventListener("pointerup", () => {
-      if (!isJogControlModule()) return;
-      releaseJogControlButton("SB pointerup");
+      dispatchCurrentFacadeControl("secondary", "release", { reason: "SB pointerup" });
     });
     refs.pressSb2.addEventListener("pointerleave", () => {
-      if (!isJogControlModule()) return;
-      releaseJogControlButton("SB pointerleave");
+      dispatchCurrentFacadeControl("secondary", "release", { reason: "SB pointerleave" });
     });
     refs.pressSb2.addEventListener("pointercancel", () => {
-      if (!isJogControlModule()) return;
-      releaseJogControlButton("SB pointercancel");
+      dispatchCurrentFacadeControl("secondary", "release", { reason: "SB pointercancel" });
     });
-    refs.tripFr.addEventListener("click", handleTripFrButtonClick);
+    refs.tripFr.addEventListener("click", handleProtectionPlatformAction);
     refs.tripFr2.addEventListener("click", handleTripFr2ButtonClick);
-    refs.resetFr.addEventListener("click", resetFr);
+    refs.resetFr.addEventListener("click", handleProtectionResetPlatformAction);
     refs.resetFr2.addEventListener("click", resetFr2);
     refs.resetDemo.addEventListener("click", resetAll);
     refs.showPrinciplePlayback.addEventListener("click", () => {
@@ -13811,11 +14052,7 @@
       render();
     });
     refs.boardFr1.addEventListener("click", () => {
-      if (state.overload) {
-        resetFr();
-      } else {
-        tripFr();
-      }
+      handleProtectionPlatformAction();
     });
     refs.boardMotor.addEventListener("click", () => {
       const messages = {
@@ -13827,9 +14064,9 @@
       setInfo("motor", messages[state.motorState]);
       render();
     });
-    refs.boardSb1.addEventListener("click", handlePrimaryActionButtonClick);
-    refs.boardSb2.addEventListener("click", handleSecondaryActionButtonClick);
-    refs.boardSb3.addEventListener("click", stopMotor2);
+    refs.boardSb1.addEventListener("click", handlePrimaryPlatformAction);
+    refs.boardSb2.addEventListener("click", handleSecondaryPlatformAction);
+    refs.boardSb3.addEventListener("click", handleTertiaryPlatformAction);
     refs.simulationComponentLayer.addEventListener("click", (event) => {
       if (!isContinuousControlModule()) return;
       const piece = event.target.closest?.("[data-sim-piece]");
@@ -13839,23 +14076,19 @@
       }
     });
     refs.simulationComponentLayer.addEventListener("pointerdown", (event) => {
-      if (!isJogControlModule()) return;
       const piece = event.target.closest?.('[data-sim-piece="cmp_jog_sb"]');
       if (!piece) return;
+      if (!dispatchCurrentFacadeControl("secondary", "press", { reason: "canvas pointerdown" })) return;
       event.preventDefault();
-      pressJogControlButton();
     });
     document.addEventListener("pointerup", () => {
-      if (!isJogControlModule()) return;
-      releaseJogControlButton("document pointerup");
+      dispatchCurrentFacadeControl("secondary", "release", { reason: "document pointerup" });
     });
     document.addEventListener("pointercancel", () => {
-      if (!isJogControlModule()) return;
-      releaseJogControlButton("document pointercancel");
+      dispatchCurrentFacadeControl("secondary", "release", { reason: "document pointercancel" });
     });
     window.addEventListener("blur", () => {
-      if (!isJogControlModule()) return;
-      releaseJogControlButton("window blur release");
+      dispatchCurrentFacadeControl("secondary", "release", { reason: "window blur release" });
     });
     refs.navItems.forEach((button) => {
       button.addEventListener("click", () => switchModule(button.dataset.module));

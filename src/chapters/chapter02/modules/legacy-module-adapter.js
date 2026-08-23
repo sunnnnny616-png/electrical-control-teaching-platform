@@ -18,6 +18,7 @@
         aliases,
         circuitData,
         createInitialState: safeCall("createInitialState", () => ({})),
+        getStateSnapshot: safeCall("getStateSnapshot", () => ({})),
         dispatchAction: safeCall("dispatchAction", () => null),
         solve: safeCall("solve", () => null),
         normalizeSolverResult: safeCall("normalizeSolverResult", (result) => result),

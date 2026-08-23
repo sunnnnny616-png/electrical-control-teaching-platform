@@ -33,13 +33,21 @@
       const context = Object.freeze({ mountRoot, services, scope, reason: loadOptions.reason || "load" });
       const instance = definition.create(context);
       platform.contracts.assertModuleContract(instance);
-      const initialState = instance.createInitialState();
-      setActiveModuleId(definition.meta.routeId, definition.meta.moduleId);
-      instance.mount({ initialState });
-      instance.render();
       current = { definition, instance, scope };
-      transitionCount += 1;
-      return instance;
+      try {
+        const initialState = instance.createInitialState();
+        setActiveModuleId(definition.meta.routeId, definition.meta.moduleId);
+        instance.mount({ initialState });
+        if (definition.meta.integrationMode === "facade-v1") {
+          platform.contracts.assertFacadeOutputs(instance);
+        }
+        instance.render();
+        transitionCount += 1;
+        return instance;
+      } catch (error) {
+        disposeCurrent("module-load-error");
+        throw error;
+      }
     }
 
     function resetCurrent() {
