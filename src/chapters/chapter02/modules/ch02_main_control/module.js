@@ -2,8 +2,9 @@
   "use strict";
   const platform = global.ECTPPlatform = global.ECTPPlatform || {};
   platform.moduleDefinitions = platform.moduleDefinitions || {};
-  platform.moduleDefinitions.createCh02MainControl = (options) => platform.adapters.createLegacyModuleDefinition({
-    ...options,
+  platform.moduleDefinitions.createCh02MainControl = (options) => platform.facadeAdapter.createFacadeModuleDefinition({
+    circuitData: options.circuitData,
+    createFacade: () => platform.moduleFacades.createMainControlFacade({ port: options.port }),
     meta: {
       schemaVersion: "1.0",
       chapterId: "ch02",
@@ -16,6 +17,7 @@
       simulationLevel: "S2",
       maturity: "M3",
       status: "ready",
+      integrationMode: "facade-v1",
       geometryLockId: "main_control_geometry_v1_locked"
     },
     aliases: ["ch02_main_control"]

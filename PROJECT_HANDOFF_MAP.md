@@ -1,21 +1,23 @@
 # PROJECT_HANDOFF_MAP
 
-> 2026-08-22 状态：第一阶段 Platform Framework v1 已接入。下面 A-L 保留为基线审计地图，其中旧行号不再是当前精确行号；新开发应优先使用本节路径与 `docs/平台框架改造_第一阶段实施记录_v0.1.md`。
+> 2026-08-23 状态：第三阶段已将第二章四个成熟模块统一接入 Module Contract 1.1 与 Facade Module Adapter，并建立 `_module-template`。下面 A-L 保留为改造前基线审计地图，其中旧行号不再是当前精确行号；新开发应优先使用本节路径与三阶段实施记录。
 
-## 0. Platform Framework v1 当前入口
+## 0. Platform Framework / Facade 当前入口
 
 - 页面入口与成熟电路实现：`index.html`
 - Module Contract：`src/schemas/module-contract.js`
 - Registry：`src/registry/module-registry.js`
 - Module Loader：`src/platform/module-loader/module-loader.js`
+- Facade Module Adapter：`src/platform/module-adapter/facade-module-adapter.js`
 - Runtime Scope：`src/platform/runtime/runtime-scope.js`
 - 章节导航：`src/platform/navigation/chapter-navigation.js`
 - Platform Shell 样式：`src/platform/shell/platform-shell-v1.css`
-- Legacy Adapter：`src/chapters/chapter02/modules/legacy-module-adapter.js`
-- 第二章模块定义：`src/chapters/chapter02/modules/ch02_*/module.js`
-- 实施与回归记录：`docs/平台框架改造_第一阶段实施记录_v0.1.md`
+- Legacy Adapter：`src/chapters/chapter02/modules/legacy-module-adapter.js`（历史兼容，四个正式模块已不再使用）
+- 第二章模块定义与门面：`src/chapters/chapter02/modules/ch02_*/module.js`、`facade.js`
+- 新模块复制模板：`src/chapters/_module-template/`
+- 实施与回归记录：`docs/平台框架改造_第一阶段实施记录_v0.1.md`、`docs/平台框架改造_第二阶段门面迁移实施记录_v0.1.md`、`docs/平台框架改造_第三阶段四模块门面统一实施记录_v0.1.md`
 
-当前四个模块仍复用 `index.html` 中的成熟 topology、Solver、Current Flow 与 SVG 渲染；新增文件是接入层，不代表已迁走电路实现。
+当前四个模块全部通过 Facade 接入，但仍复用 `index.html` 中的成熟 topology、Solver、Current Flow、动作逻辑与 SVG 渲染；新增文件是接入层，不代表已迁走或重写电路实现。
 
 ## A. 当前入口文件
 

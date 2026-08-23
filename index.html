@@ -3216,7 +3216,9 @@
   <script src="./src/platform/module-loader/module-loader.js"></script>
   <script src="./src/platform/module-adapter/facade-module-adapter.js"></script>
   <script src="./src/chapters/chapter02/modules/legacy-module-adapter.js"></script>
+  <script src="./src/chapters/chapter02/modules/ch02_main_control/facade.js"></script>
   <script src="./src/chapters/chapter02/modules/ch02_jog/facade.js"></script>
+  <script src="./src/chapters/chapter02/modules/ch02_continuous/facade.js"></script>
   <script src="./src/chapters/chapter02/modules/ch02_reverse/facade.js"></script>
   <script src="./src/chapters/chapter02/modules/ch02_main_control/module.js"></script>
   <script src="./src/chapters/chapter02/modules/ch02_jog/module.js"></script>
@@ -11758,34 +11760,6 @@
         return JSON.parse(JSON.stringify(facadeInstance.getOperationViewModel().actionStates || []));
       }
 
-      if (isContinuousControlModule()) {
-        const op = state.continuousControl.operationState;
-        const solver = state.continuousControl.solver;
-        return [
-          { id: "qf1", label: "QF1", currentState: op.qf1, availableTransitions: [op.qf1 === "closed" ? "open" : "close"], onAction: "toggleQf1", feedbackText: op.qf1 === "closed" ? "QF1 当前已合闸，可再次分闸。" : "QF1 当前断开，可再次合闸。" },
-          { id: "sb1", label: "启动 SB1", currentState: solver.motorRunning ? "running" : "ready", availableTransitions: [solver.motorRunning ? "show_stop_hint" : "start"], onAction: "startForward", feedbackText: solver.motorRunning ? "SB1 是瞬时启动按钮，连续运行后应通过 SB2 停止。" : "按下 SB1 后，系统会依据自锁支路是否建立来决定是否连续运行。" },
-          { id: "sb2", label: "停止 SB2", currentState: solver.motorRunning ? "running" : "stopped", availableTransitions: [solver.motorRunning ? "stop" : "show_stopped_hint"], onAction: "stopMotor", feedbackText: solver.motorRunning ? "SB2 可切开控制回路并解除自锁。" : "设备当前已经停止，再按 SB2 只会给出状态提示。" },
-          { id: "fr1_trip", label: "FR1 过载", currentState: op.fr1, availableTransitions: [op.fr1 === "overload" ? "show_overload_hint" : "trip"], onAction: "tripFr", feedbackText: op.fr1 === "overload" ? "FR1 已处于动作状态。" : "触发 FR1 后，保护触点断开，接触器释放。" },
-          { id: "fr1_reset", label: "FR1 复位", currentState: op.fr1, availableTransitions: [op.fr1 === "overload" ? "reset" : "show_normal_hint"], onAction: "resetFr", feedbackText: op.fr1 === "overload" ? "FR1 可复位回到待启动状态。" : "FR1 当前处于正常状态。" }
-        ];
-      }
-
-      if (isMainControlModule()) {
-        const op = state.mainControl.operationState;
-        const solver = state.mainControl.solver;
-        return [
-          { id: "qf1", label: "QF1", currentState: op.qf1, availableTransitions: [op.qf1 === "closed" ? "open" : "close"], onAction: "toggleQf1", feedbackText: op.qf1 === "closed" ? "QF1 当前已合闸。" : "QF1 当前断开。" },
-          { id: "sb1", label: "停止 SB1", currentState: solver.motorStates.motor1, availableTransitions: [solver.motorStates.motor1 === "running" ? "stop" : "show_stopped_hint"], onAction: "stopMotor", feedbackText: solver.motorStates.motor1 === "running" ? "SB1 用于停止 1M。" : "1M 当前已经停止。" },
-          { id: "sb2", label: "启动 SB2", currentState: solver.motorStates.motor1, availableTransitions: [solver.motorStates.motor1 === "running" ? "show_running_hint" : "start"], onAction: "startForward", feedbackText: solver.motorStates.motor1 === "running" ? "1M 当前已经运行。" : "SB2 会尝试建立 KM1 控制回路。" },
-          { id: "sb3", label: "停止 SB3", currentState: solver.motorStates.motor2, availableTransitions: [solver.motorStates.motor2 === "running" ? "stop" : "show_stopped_hint"], onAction: "stopMotor2", feedbackText: solver.motorStates.motor2 === "running" ? "SB3 用于停止 2M。" : "2M 当前已经停止。" },
-          { id: "sb4", label: "启动 SB4", currentState: solver.motorStates.motor2, availableTransitions: [solver.motorStates.motor2 === "running" ? "show_running_hint" : "start"], onAction: "startReverse", feedbackText: solver.motorStates.motor2 === "running" ? "2M 当前已经运行。" : "SB4 会尝试建立 KM2 控制回路。" },
-          { id: "fr1_trip", label: "FR1 过载", currentState: op.fr1, availableTransitions: [op.fr1 === "overload" ? "show_overload_hint" : "trip"], onAction: "tripFr", feedbackText: op.fr1 === "overload" ? "FR1 已处于动作状态。" : "FR1 仅保护 1M 支路。" },
-          { id: "fr1_reset", label: "FR1 复位", currentState: op.fr1, availableTransitions: [op.fr1 === "overload" ? "reset" : "show_normal_hint"], onAction: "resetFr", feedbackText: op.fr1 === "overload" ? "FR1 可复位到待命状态。" : "FR1 当前处于正常状态。" },
-          { id: "fr2_trip", label: "FR2 过载", currentState: op.fr2, availableTransitions: [op.fr2 === "overload" ? "show_overload_hint" : "trip"], onAction: "tripFr2", feedbackText: op.fr2 === "overload" ? "FR2 已处于动作状态。" : "FR2 仅保护 2M 支路。" },
-          { id: "fr2_reset", label: "FR2 复位", currentState: op.fr2, availableTransitions: [op.fr2 === "overload" ? "reset" : "show_normal_hint"], onAction: "resetFr2", feedbackText: op.fr2 === "overload" ? "FR2 可复位到待命状态。" : "FR2 当前处于正常状态。" }
-        ];
-      }
-
       return [];
     }
 
@@ -12004,11 +11978,13 @@
 
       if (isContinuousControlModule()) {
         renderContinuousControlModule();
+        renderCurrentFacadeStatusViewModel();
         return;
       }
 
       if (isMainControlModule()) {
         renderMainControlModule();
+        renderCurrentFacadeStatusViewModel();
         return;
       }
 
@@ -12506,6 +12482,11 @@
       handleTertiaryActionButtonClick();
     }
 
+    function handleQuaternaryPlatformAction() {
+      if (dispatchCurrentFacadeControl("quaternary")) return;
+      handleFourthActionButtonClick();
+    }
+
     function handleProtectionPlatformAction() {
       const facadeInstance = getCurrentFacadeInstance();
       const viewModel = facadeInstance && facadeInstance.getOperationViewModel();
@@ -12522,12 +12503,30 @@
       return resetFr();
     }
 
+    function getCurrentFacadeProtection(slot) {
+      const facadeInstance = getCurrentFacadeInstance();
+      const viewModel = facadeInstance && facadeInstance.getOperationViewModel();
+      const protections = viewModel?.protections || [];
+      return protections.find((item) => item.slot === slot && item.visible !== false) || null;
+    }
+
+    function handleSecondaryProtectionPlatformAction() {
+      const actionType = getCurrentFacadeProtection("secondary")?.toggleAction;
+      if (actionType) return dispatchCurrentFacadeAction(actionType);
+      return handleTripFr2ButtonClick();
+    }
+
+    function handleSecondaryProtectionResetPlatformAction() {
+      const actionType = getCurrentFacadeProtection("secondary")?.resetAction;
+      if (actionType) return dispatchCurrentFacadeAction(actionType);
+      return resetFr2();
+    }
+
+
     function isCurrentQfClosed() {
       const facadeInstance = getCurrentFacadeInstance();
       const viewModel = facadeInstance && facadeInstance.getOperationViewModel();
       if (viewModel) return Boolean(viewModel.power.closed);
-      if (isContinuousControlModule()) return state.continuousControl.operationState.qf1 === "closed";
-      if (isMainControlModule()) return state.mainControl.operationState.qf1 === "closed";
       return false;
     }
 
@@ -13493,13 +13492,29 @@
       refs.toggleQf.disabled = !viewModel.power.closeEnabled;
       refs.openQf.disabled = !viewModel.power.openEnabled;
 
-      const protection = viewModel.protection || {};
-      refs.tripFr.classList.remove("hidden");
-      refs.resetFr.classList.remove("hidden");
-      refs.tripFr2.classList.add("hidden");
-      refs.resetFr2.classList.add("hidden");
-      refs.tripFrLabel.textContent = protection.label || "保护动作";
-      refs.resetFr.textContent = protection.resetLabel || "保护复位";
+      const protections = viewModel.protections || (viewModel.protection ? [viewModel.protection] : []);
+      const protectionBindings = [
+        {
+          slot: "primary",
+          tripButton: refs.tripFr,
+          tripLabel: refs.tripFrLabel,
+          resetButton: refs.resetFr
+        },
+        {
+          slot: "secondary",
+          tripButton: refs.tripFr2,
+          tripLabel: refs.tripFr2Label,
+          resetButton: refs.resetFr2
+        }
+      ];
+      protectionBindings.forEach((binding) => {
+        const protection = protections.find((item) => (item.slot || "primary") === binding.slot && item.visible !== false);
+        binding.tripButton.classList.toggle("hidden", !protection);
+        binding.resetButton.classList.toggle("hidden", !protection);
+        if (!protection) return;
+        binding.tripLabel.textContent = protection.label || "保护动作";
+        binding.resetButton.textContent = protection.resetLabel || "保护复位";
+      });
     }
 
     function renderCurrentFacadeStatusViewModel() {
@@ -13523,59 +13538,6 @@
         binding.label.textContent = row.label;
         setPill(binding.pill, row.value, row.tone || "off");
       });
-    }
-
-    function getLegacyRouteState(routeId) {
-      if (routeId === "main-control") {
-        return { operationState: state.mainControl.operationState, solver: state.mainControl.solver };
-      }
-      if (routeId === "self-lock") {
-        return { operationState: state.continuousControl.operationState, solver: state.continuousControl.solver };
-      }
-      throw new Error(`Route ${routeId} uses facade-v1 and is not available through the legacy state bridge.`);
-    }
-
-    function resetLegacyRouteState(routeId) {
-      cancelCurrentFlowReplay();
-      state.currentFlow.lastReplayDescriptor = null;
-      state.currentFlow.activeStep = null;
-      if (routeId === "main-control") resetMainControlSolverState();
-      else if (routeId === "self-lock") resetContinuousControlSolverState();
-      else throw new Error(`Route ${routeId} must reset through its facade port.`);
-      clearLegacyInteractionDom();
-      return JSON.parse(JSON.stringify(getLegacyRouteState(routeId)));
-    }
-
-    function normalizeLegacySolverResult(routeId) {
-      const { operationState, solver } = getLegacyRouteState(routeId);
-      const legacyModuleId = routeId === "main-control" ? "ch02_main_control" : "ch02_continuous";
-      const base = window.ECTPPlatform.contracts.createEmptySolverResult(legacyModuleId);
-      const stableDeviceStates = solver.stableControlState && typeof solver.stableControlState === "object"
-        ? { ...solver.stableControlState }
-        : { controlState: solver.stableControlState ?? null };
-      const protectionStates = Object.fromEntries(
-        Object.entries(operationState).filter(([key]) => key.startsWith("fr"))
-      );
-      return {
-        ...base,
-        stableDeviceStates,
-        edgeStates: solver.edgeStates ? { ...solver.edgeStates } : {},
-        activeMainWireIds: [...(solver.activeMainWireIds || [])],
-        activeControlWireIds: [...(solver.activeControlWireIds || [])],
-        partialWireIds: [...(solver.partialControlWireIds || [])],
-        motorStates: solver.motorStates
-          ? JSON.parse(JSON.stringify(solver.motorStates))
-          : { motorState: solver.motorState ?? null, motorRunning: solver.motorRunning ?? false },
-        protectionStates,
-        converged: solver.converged !== false,
-        iterationCount: solver.iterationCount || 0,
-        lastAction: solver.lastAction || {},
-        extension: {
-          activeControlEdgeIds: [...(solver.activeControlEdgeIds || [])],
-          activeMainEdgeIds: [...(solver.activeMainEdgeIds || [])],
-          controlSupplyBoundary: solver.controlSupplyBoundary || null
-        }
-      };
     }
 
     function getLegacyCircuitData(routeId) {
@@ -13637,35 +13599,83 @@
       return runSolverTests();
     }
 
-    function solveLegacyRoute(routeId, actionMessage = "module contract solve") {
-      if (routeId === "main-control") recomputeMainControlSolver(actionMessage);
-      else if (routeId === "self-lock") recomputeContinuousControlSolver(actionMessage);
-      else throw new Error(`Route ${routeId} must solve through its facade port.`);
-      return normalizeLegacySolverResult(routeId);
-    }
-
-    function createLegacyHooks(routeId) {
+    function createMainControlModulePort() {
+      function readRawState() {
+        return {
+          operationState: cloneMainControlOperationState(),
+          stableControlState: cloneMainControlCoilState(),
+          solver: cloneFacadePortValue(state.mainControl.solver)
+        };
+      }
       return Object.freeze({
-        createInitialState: () => resetLegacyRouteState(routeId),
-        getStateSnapshot: () => JSON.parse(JSON.stringify(getLegacyRouteState(routeId))),
-        dispatchAction: () => getLegacyRouteState(routeId),
-        solve: (actionMessage) => solveLegacyRoute(routeId, actionMessage),
-        normalizeSolverResult: () => normalizeLegacySolverResult(routeId),
-        getOperationViewModel: () => JSON.parse(JSON.stringify(getLegacyRouteState(routeId).operationState)),
-        getStatusViewModel: () => normalizeLegacySolverResult(routeId),
-        buildTeachingFeedback: () => JSON.parse(JSON.stringify(state.actionFeedback)),
-        buildReplaySteps: () => JSON.parse(JSON.stringify(state.currentFlow.lastReplayDescriptor?.steps || [])),
-        mount: () => undefined,
+        readRawState,
+        reset: () => {
+          resetMainControlSolverState();
+          return readRawState();
+        },
+        solve: (actionMessage) => {
+          recomputeMainControlSolver(actionMessage);
+          return readRawState();
+        },
+        togglePower: () => toggleQf1(),
+        startPrimary: () => startForward(),
+        stopPrimary: () => stopMotor(),
+        startSecondary: () => startReverse(),
+        stopSecondary: () => stopMotor2(),
+        toggleProtection: () => handleTripFrButtonClick(),
+        resetProtection: () => resetFr(),
+        toggleSecondaryProtection: () => handleTripFr2ButtonClick(),
+        resetSecondaryProtection: () => resetFr2(),
         render: () => render(),
-        reset: () => resetLegacyRouteState(routeId),
         pause: () => cancelCurrentFlowReplay(),
-        resume: () => undefined,
         unmount: () => {
           cancelCurrentFlowReplay();
           clearLegacyInteractionDom();
         },
-        validateGeometry: () => validateLegacyGeometry(routeId),
-        runTests: () => runLegacyModuleTests(routeId)
+        validateGeometry: () => validateMainControlGeometryData(),
+        runTests: () => runMainControlSolverTests(),
+        getFeedback: () => cloneFacadePortValue(state.actionFeedback),
+        getReplaySteps: () => cloneFacadePortValue(
+          state.currentFlow.lastReplayDescriptor && state.currentFlow.lastReplayDescriptor.steps || []
+        )
+      });
+    }
+
+    function createContinuousModulePort() {
+      function readRawState() {
+        return {
+          operationState: cloneContinuousControlOperationState(),
+          stableControlState: cloneContinuousControlCoilState(),
+          solver: cloneFacadePortValue(state.continuousControl.solver)
+        };
+      }
+      return Object.freeze({
+        readRawState,
+        reset: () => {
+          resetContinuousControlSolverState();
+          return readRawState();
+        },
+        solve: (actionMessage) => {
+          recomputeContinuousControlSolver(actionMessage);
+          return readRawState();
+        },
+        togglePower: () => toggleQf1(),
+        startPrimary: () => startForward(),
+        stopPrimary: () => stopMotor(),
+        toggleProtection: () => handleTripFrButtonClick(),
+        resetProtection: () => resetFr(),
+        render: () => render(),
+        pause: () => cancelCurrentFlowReplay(),
+        unmount: () => {
+          cancelCurrentFlowReplay();
+          clearLegacyInteractionDom();
+        },
+        validateGeometry: () => validateContinuousControlGeometryData(),
+        runTests: () => runContinuousControlSolverTests(),
+        getFeedback: () => cloneFacadePortValue(state.actionFeedback),
+        getReplaySteps: () => cloneFacadePortValue(
+          state.currentFlow.lastReplayDescriptor && state.currentFlow.lastReplayDescriptor.steps || []
+        )
       });
     }
 
@@ -13767,7 +13777,7 @@
       const registrations = [
         platform.moduleDefinitions.createCh02MainControl({
           circuitData: getLegacyCircuitData("main-control"),
-          hooks: createLegacyHooks("main-control")
+          port: createMainControlModulePort()
         }),
         platform.moduleDefinitions.createCh02Jog({
           circuitData: getLegacyCircuitData("jog-control"),
@@ -13775,7 +13785,7 @@
         }),
         platform.moduleDefinitions.createCh02Continuous({
           circuitData: getLegacyCircuitData("self-lock"),
-          hooks: createLegacyHooks("self-lock")
+          port: createContinuousModulePort()
         }),
         platform.moduleDefinitions.createCh02Reverse({
           circuitData: getLegacyCircuitData("forward-reverse"),
@@ -13994,7 +14004,7 @@
     refs.pressSb1.addEventListener("click", handlePrimaryPlatformAction);
     refs.pressSb2.addEventListener("click", handleSecondaryPlatformAction);
     refs.pressSb3.addEventListener("click", handleTertiaryPlatformAction);
-    refs.pressSb4.addEventListener("click", handleFourthActionButtonClick);
+    refs.pressSb4.addEventListener("click", handleQuaternaryPlatformAction);
     refs.pressSb2.addEventListener("pointerdown", (event) => {
       if (!dispatchCurrentFacadeControl("secondary", "press", { reason: "SB pointerdown" })) return;
       event.preventDefault();
@@ -14009,9 +14019,9 @@
       dispatchCurrentFacadeControl("secondary", "release", { reason: "SB pointercancel" });
     });
     refs.tripFr.addEventListener("click", handleProtectionPlatformAction);
-    refs.tripFr2.addEventListener("click", handleTripFr2ButtonClick);
+    refs.tripFr2.addEventListener("click", handleSecondaryProtectionPlatformAction);
     refs.resetFr.addEventListener("click", handleProtectionResetPlatformAction);
-    refs.resetFr2.addEventListener("click", resetFr2);
+    refs.resetFr2.addEventListener("click", handleSecondaryProtectionResetPlatformAction);
     refs.resetDemo.addEventListener("click", resetAll);
     refs.showPrinciplePlayback.addEventListener("click", () => {
       if (!isLiveCircuitModule() || !state.currentFlow.lastReplayDescriptor?.steps?.length) return;
@@ -14071,9 +14081,18 @@
       if (!isContinuousControlModule()) return;
       const piece = event.target.closest?.("[data-sim-piece]");
       if (!piece) return;
-      if (handleContinuousControlCanvasClick(piece.dataset.simPiece)) {
-        event.preventDefault();
-      }
+      const actionByPiece = {
+        cmp_cont_sb1: "START_PRIMARY_PRESS",
+        cmp_cont_sb2: "STOP_PRIMARY_PRESS",
+        cmp_cont_fr1_main: "PROTECTION_TOGGLE",
+        cmp_cont_fr1_nc: "PROTECTION_TOGGLE"
+      };
+      const actionType = piece.dataset.simPiece === "cmp_cont_qf1"
+        ? isCurrentQfClosed() ? "POWER_OPEN" : "POWER_CLOSE"
+        : actionByPiece[piece.dataset.simPiece];
+      if (!actionType) return;
+      dispatchCurrentFacadeAction(actionType, {}, "continuous-canvas");
+      event.preventDefault();
     });
     refs.simulationComponentLayer.addEventListener("pointerdown", (event) => {
       const piece = event.target.closest?.('[data-sim-piece="cmp_jog_sb"]');
