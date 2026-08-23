@@ -3215,7 +3215,6 @@
   <script src="./src/registry/module-registry.js"></script>
   <script src="./src/platform/module-loader/module-loader.js"></script>
   <script src="./src/platform/module-adapter/facade-module-adapter.js"></script>
-  <script src="./src/chapters/chapter02/modules/legacy-module-adapter.js"></script>
   <script src="./src/chapters/chapter02/modules/ch02_main_control/facade.js"></script>
   <script src="./src/chapters/chapter02/modules/ch02_jog/facade.js"></script>
   <script src="./src/chapters/chapter02/modules/ch02_continuous/facade.js"></script>
@@ -13765,7 +13764,6 @@
       if (!platform?.contracts
         || !platform?.registry
         || !platform?.loader
-        || !platform?.adapters
         || !platform?.facadeAdapter
         || !platform?.moduleFacades) {
         console.error("Platform runtime files did not load; falling back to legacy shell.");
