@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>电器控制系统交互式教学演示</title>
+  <title>电器控制系统交互式教学平台</title>
+  <link rel="icon" href="data:,">
   <style>
     :root {
       --bg: #0c1320;
@@ -1330,17 +1331,16 @@
     }
 
     .app-shell {
-      height: 100vh;
+      min-height: 100vh;
       display: grid;
-      grid-template-rows: 64px minmax(0, 1fr) 48px;
+      grid-template-rows: 64px minmax(0, 1fr) auto;
       background: #f5f7fa;
     }
 
     .topbar {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
+      display: flex;
       align-items: center;
-      gap: 16px;
+      justify-content: center;
       padding: 0 24px;
       background: #ffffff;
       border-bottom: 1px solid #dde3ea;
@@ -1377,7 +1377,7 @@
     .workspace {
       min-height: 0;
       display: grid;
-      grid-template-columns: 220px minmax(0, 1fr) 320px;
+      grid-template-columns: 240px minmax(0, 1fr) 340px;
       gap: 16px;
       padding: 16px;
     }
@@ -1406,10 +1406,41 @@
       font-weight: 800;
     }
 
-    .module-nav {
+    .sidebar-current {
+      margin: 0 8px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: #f8fbff;
+      border: 1px solid #dbe7fb;
+      color: #64748b;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+
+    .sidebar-current strong {
+      color: #1f2937;
+      margin-left: 4px;
+    }
+
+    .chapter-group {
       display: flex;
       flex-direction: column;
       gap: 8px;
+    }
+
+    .chapter-label {
+      padding: 0 10px;
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+
+    .module-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
     }
 
     .module-nav-item {
@@ -1447,6 +1478,7 @@
     }
 
     .module-nav-item .label {
+      display: block;
       font-size: 14px;
       font-weight: 700;
       line-height: 1.5;
@@ -2559,14 +2591,65 @@
       line-height: 1.7;
     }
 
+    .ai-placeholder-copy {
+      color: #64748b;
+    }
+
     .footerbar {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 14px 16px 16px;
+      background: #ffffff;
+      border-top: 1px solid #dde3ea;
+    }
+
+    .footer-playback-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .footer-playback-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
-      padding: 0 16px;
-      background: #ffffff;
-      border-top: 1px solid #dde3ea;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .footer-playback-head strong {
+      color: #1f2937;
+      font-size: 15px;
+    }
+
+    .footer-playback-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .footer-playback-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .footerbar .note {
+      flex: 1 1 420px;
+      min-height: 44px;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      border-radius: 12px;
+      border: 1px solid #e5eaf0;
+      background: #f9fbfd;
+      color: #475569;
     }
 
     .footer-legend {
@@ -2625,7 +2708,7 @@
 
     @media (max-width: 1480px) {
       .workspace {
-        grid-template-columns: 220px minmax(0, 1fr);
+        grid-template-columns: 240px minmax(0, 1fr);
       }
 
       .inspector {
@@ -2647,8 +2730,7 @@
       }
 
       .topbar {
-        grid-template-columns: 1fr;
-        justify-items: start;
+        justify-content: flex-start;
         padding: 14px 16px;
       }
 
@@ -2671,47 +2753,31 @@
       }
 
       .footerbar {
-        align-items: flex-start;
-        flex-direction: column;
         padding: 12px 16px;
       }
 
-      .footer-tip {
-        white-space: normal;
-        text-align: left;
+      .footer-playback-head,
+      .footer-playback-actions,
+      .footer-playback-meta {
+        align-items: stretch;
+        flex-direction: column;
       }
     }
   </style>
+  <link rel="stylesheet" href="./src/platform/shell/platform-shell-v1.css?v=20260822-2" />
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
-      <div class="topbar-brand">电器控制系统交互式教学平台</div>
-      <div class="topbar-center">第二章 电器控制系统</div>
-      <div class="topbar-current">当前模块：<strong id="currentModuleText">主电路与控制电路</strong></div>
+      <div class="topbar-brand"><span class="platform-logo" aria-hidden="true"></span>电器控制系统交互式教学平台</div>
     </header>
 
     <div class="workspace">
       <aside class="sidebar">
-        <div class="sidebar-title">电路演示目录</div>
-        <nav class="module-nav">
-          <button class="module-nav-item active" data-module="main-control">
-            <span class="num">01</span>
-            <span class="label">主电路与控制电路</span>
-          </button>
-          <button class="module-nav-item" data-module="jog-control">
-            <span class="num">02</span>
-            <span class="label">点动控制</span>
-          </button>
-          <button class="module-nav-item" data-module="self-lock">
-            <span class="num">03</span>
-            <span class="label">长动控制</span>
-          </button>
-          <button class="module-nav-item" data-module="forward-reverse">
-            <span class="num">04</span>
-            <span class="label">正反转控制</span>
-          </button>
-        </nav>
+        <div class="sidebar-title">章节目录</div>
+        <div class="sidebar-current hidden" aria-hidden="true">当前实验：<strong id="currentModuleText">主电路与控制电路</strong></div>
+        <div id="chapterNavigation" class="platform-chapter-navigation"></div>
+        <button type="button" class="sidebar-resource-link">实验资料与参考</button>
       </aside>
 
       <main class="stage-panel">
@@ -2729,6 +2795,7 @@
             <p id="experimentSubtitle">三相异步电动机正反转控制通过接触器改变电动机两相相序实现转向切换，并利用辅助触点实现自锁与电气互锁。</p>
           </div>
 
+          <div id="experimentRoot" class="experiment-root">
           <div id="placeholderCanvas" class="module-canvas"></div>
 
           <div id="forwardReverseCanvas" class="module-canvas hidden">
@@ -2966,14 +3033,51 @@
           </svg>
             </div>
           </div>
+          </div>
         </div>
+
+        <footer class="footerbar">
+          <div class="footer-playback-panel">
+            <div class="footer-playback-head">
+              <strong>展示原理（操作步骤回放）</strong>
+              <div class="footer-playback-actions">
+                <button id="showPrinciplePlayback" class="small-btn principle-play-btn" disabled>展示原理</button>
+                <div id="playbackControls" class="playback-controls">
+                  <button id="playbackPrev" class="small-btn" disabled>上一步</button>
+                  <button id="playbackToggle" class="small-btn" disabled>播放</button>
+                  <button id="playbackNext" class="small-btn" disabled>下一步</button>
+                </div>
+              </div>
+            </div>
+            <div class="footer-playback-meta">
+              <div class="playback-speed-row">
+                <span class="playback-speed-label">速度</span>
+                <div class="playback-speed-group">
+                  <button id="playbackSpeed05" class="small-btn">0.5x</button>
+                  <button id="playbackSpeed10" class="small-btn active">1x</button>
+                  <button id="playbackSpeed15" class="small-btn">1.5x</button>
+                </div>
+              </div>
+              <div class="note" id="currentStepText">当前步骤：待机，未播放教学回放。</div>
+            </div>
+          </div>
+          <div class="footer-legend hidden" id="footerLegend" aria-hidden="true">
+            <span class="legend-item"><i class="legend-line l1"></i>L1 黄色</span>
+            <span class="legend-item"><i class="legend-line l2"></i>L2 青色</span>
+            <span class="legend-item"><i class="legend-line l3"></i>L3 绿色</span>
+            <span class="legend-item"><i class="legend-line ctrl"></i>控制电源 红色</span>
+            <span class="legend-item"><i class="legend-line idle"></i>未通电线路 灰色</span>
+          </div>
+          <div class="footer-tip hidden" id="footerTip" aria-hidden="true">教学演示会按真实动作顺序展示按钮、控制回路、线圈、辅助触点和主回路的变化。</div>
+        </footer>
       </main>
 
       <aside class="inspector">
         <section id="operationControlCard" class="info-card operation-control-card">
           <h3>操作控制区</h3>
-          <button id="toggleQf" class="qf-btn">QF1 合闸</button>
           <div class="control-grid">
+            <button id="toggleQf" class="qf-btn">QF1 合闸</button>
+            <button id="openQf" class="qf-btn qf-open-action">QF1 分闸</button>
             <button id="pressSb1" class="ctrl-btn stop">
               <span class="chip"></span>
               <strong id="pressSb1Label">停止 SB1</strong>
@@ -3011,6 +3115,41 @@
           <div id="actionFeedbackBox" class="operation-feedback-inline tone-info">
             <strong id="actionFeedbackTitle">等待操作</strong>
             <p id="actionFeedbackText">点击操作按钮后，这里会显示简短教学提示。</p>
+          </div>
+        </section>
+
+        <section id="statusCard" class="info-card">
+          <h3>当前状态</h3>
+          <div class="status-grid">
+            <div class="status-row"><span id="statusPowerLabel">电源</span><span id="statusPower" class="pill off">未合上</span></div>
+            <div class="status-row"><span id="statusKi1Label">KI1</span><span id="statusKi1" class="pill off">释放</span></div>
+            <div class="status-row"><span id="statusKi2Label">KI2</span><span id="statusKi2" class="pill off">释放</span></div>
+            <div class="status-row"><span id="statusMotorLabel">电机</span><span id="statusMotor" class="pill off">停止</span></div>
+            <div class="status-row"><span id="statusProtectionLabel">保护状态</span><span id="statusProtection" class="pill on">正常</span></div>
+            <div class="status-row"><span id="statusModeLabel">运行状态</span><span id="statusMode" class="pill off">模块占位</span></div>
+            <div class="status-row"><span id="statusPhaseLabel">当前相序</span><span id="statusPhase" class="pill off">待显示</span></div>
+          </div>
+        </section>
+
+        <section id="principleCard" class="info-card">
+          <h3>动作原理</h3>
+          <div class="box">
+            <strong id="teachTitle">正反转控制原理</strong>
+            <p id="teachText">三相异步电动机正反转控制通过接触器改变电动机两相相序实现转向切换，并利用辅助触点实现自锁与电气互锁。</p>
+          </div>
+          <div id="principleStepList" class="principle-step-list">
+            <div class="principle-step-item pending">
+              <span class="principle-step-marker">○</span>
+              <span class="principle-step-text">执行一次操作后，可点击“展示原理”查看教学步骤。</span>
+            </div>
+          </div>
+        </section>
+
+        <section id="aiPlaceholderCard" class="info-card">
+          <h3>AI分析</h3>
+          <div class="box">
+            <strong>国产模型API占位</strong>
+            <p class="ai-placeholder-copy">后续支持：故障分析、原理问答、学生辅导。</p>
           </div>
         </section>
 
@@ -3058,52 +3197,8 @@
           <pre id="solverDebugPre">开发面板未启用</pre>
         </section>
 
-        <section class="info-card">
-          <h3>当前状态</h3>
-          <div class="status-grid">
-            <div class="status-row"><span id="statusPowerLabel">电源</span><span id="statusPower" class="pill off">未合上</span></div>
-            <div class="status-row"><span id="statusKi1Label">KI1</span><span id="statusKi1" class="pill off">释放</span></div>
-            <div class="status-row"><span id="statusKi2Label">KI2</span><span id="statusKi2" class="pill off">释放</span></div>
-            <div class="status-row"><span id="statusMotorLabel">电机</span><span id="statusMotor" class="pill off">停止</span></div>
-            <div class="status-row"><span id="statusProtectionLabel">保护状态</span><span id="statusProtection" class="pill on">正常</span></div>
-            <div class="status-row"><span id="statusModeLabel">运行状态</span><span id="statusMode" class="pill off">模块占位</span></div>
-            <div class="status-row"><span id="statusPhaseLabel">当前相序</span><span id="statusPhase" class="pill off">待显示</span></div>
-          </div>
-        </section>
-
-        <section class="info-card">
-          <h3>当前原理</h3>
-          <div class="box">
-            <strong id="teachTitle">正反转控制原理</strong>
-            <p id="teachText">三相异步电动机正反转控制通过接触器改变电动机两相相序实现转向切换，并利用辅助触点实现自锁与电气互锁。</p>
-          </div>
-          <div class="principle-toolbar">
-            <button id="showPrinciplePlayback" class="small-btn principle-play-btn" disabled>展示原理</button>
-            <div id="playbackControls" class="playback-controls">
-              <button id="playbackPrev" class="small-btn" disabled>上一页</button>
-              <button id="playbackToggle" class="small-btn" disabled>播放</button>
-              <button id="playbackNext" class="small-btn" disabled>下一步</button>
-            </div>
-          </div>
-          <div class="playback-speed-row">
-            <span class="playback-speed-label">速度</span>
-            <div class="playback-speed-group">
-              <button id="playbackSpeed05" class="small-btn">0.5x</button>
-              <button id="playbackSpeed10" class="small-btn active">1x</button>
-              <button id="playbackSpeed15" class="small-btn">1.5x</button>
-            </div>
-          </div>
-          <div class="note" id="currentStepText">当前步骤：待机，未播放教学回放。</div>
-          <div id="principleStepList" class="principle-step-list">
-            <div class="principle-step-item pending">
-              <span class="principle-step-marker">○</span>
-              <span class="principle-step-text">执行一次操作后，可点击“展示原理”查看教学步骤。</span>
-            </div>
-          </div>
-        </section>
-
-        <section class="info-card">
-          <h3>操作提示</h3>
+        <section class="info-card hidden" aria-hidden="true">
+          <h3>模块提示缓存</h3>
           <div class="box">
             <strong id="infoTitle">教学说明</strong>
             <p id="infoText">正转与反转的区别在于主回路两相相序的交换；控制回路则通过辅助触点实现自锁与电气互锁。</p>
@@ -3113,18 +3208,22 @@
       </aside>
     </div>
 
-    <footer class="footerbar">
-      <div class="footer-legend" id="footerLegend">
-        <span class="legend-item"><i class="legend-line l1"></i>L1 黄色</span>
-        <span class="legend-item"><i class="legend-line l2"></i>L2 青色</span>
-        <span class="legend-item"><i class="legend-line l3"></i>L3 绿色</span>
-        <span class="legend-item"><i class="legend-line ctrl"></i>控制电源 红色</span>
-        <span class="legend-item"><i class="legend-line idle"></i>未通电线路 灰色</span>
-      </div>
-      <div class="footer-tip" id="footerTip">教学演示会按真实动作顺序展示按钮、控制回路、线圈、辅助触点和主回路的变化。</div>
-    </footer>
   </div>
 
+  <script src="./src/schemas/module-contract.js"></script>
+  <script src="./src/platform/runtime/runtime-scope.js"></script>
+  <script src="./src/registry/module-registry.js"></script>
+  <script src="./src/platform/module-loader/module-loader.js"></script>
+  <script src="./src/platform/module-adapter/facade-module-adapter.js"></script>
+  <script src="./src/chapters/chapter02/modules/ch02_main_control/facade.js"></script>
+  <script src="./src/chapters/chapter02/modules/ch02_jog/facade.js"></script>
+  <script src="./src/chapters/chapter02/modules/ch02_continuous/facade.js"></script>
+  <script src="./src/chapters/chapter02/modules/ch02_reverse/facade.js"></script>
+  <script src="./src/chapters/chapter02/modules/ch02_main_control/module.js"></script>
+  <script src="./src/chapters/chapter02/modules/ch02_jog/module.js"></script>
+  <script src="./src/chapters/chapter02/modules/ch02_continuous/module.js"></script>
+  <script src="./src/chapters/chapter02/modules/ch02_reverse/module.js"></script>
+  <script src="./src/platform/navigation/chapter-navigation.js"></script>
   <script>
     window.__FORWARD_REVERSE_BUILD_ID__ = "artifact-audit-2026-08-14-v1";
 
@@ -3146,11 +3245,11 @@
         code: "02",
         name: "点动控制",
         experimentTitle: "点动控制演示",
-        experimentSubtitle: "本模块后续将实现“按住运行、松开停止”的交互效果。第一阶段先保留实验画布和操作说明骨架。",
-        principleTitle: "点动控制适用于试车和调整",
-        principleText: "按钮按下时，控制回路接通，接触器线圈得电，电机运行；按钮松开后，线圈断电，电机立即停止。",
-        promptText: "后续这里会增加按住按钮触发、松开按钮停止的交互。当前阶段先检查模块切换和说明同步是否正常。",
-        footerTip: "点动控制模块后续会重点表现按钮按压持续时间与电机运行状态的同步关系。",
+        experimentSubtitle: "按住启动按钮时，KM 线圈得电并接通主回路；按钮松开后，线圈释放，电机立即停止。",
+        principleTitle: "点动控制原理",
+        principleText: "点动控制不使用自锁支路。按钮持续按下期间控制回路导通，按钮松开后控制回路立即断开。",
+        promptText: "可先合上 QF，再按住 SB 观察 KM 吸合、电机运行；松开按钮后，观察控制回路与主回路同步断开。",
+        footerTip: "点动控制重点表现按钮持续按压时间与电机即时启停之间的对应关系。",
         placeholderTag: "交互占位",
         placeholderNote: "当前占位图已经预留 QF、SB、KM、FR、M 等元件位置。后续会在这里加入鼠标按住触发的状态判断和路径高亮。",
         zones: [
@@ -3189,6 +3288,9 @@
     const uiState = {
       currentModule: "main-control"
     };
+    let platformModuleRegistry = null;
+    let platformModuleLoader = null;
+    let platformNavigation = null;
 
     const state = {
       powerOn: false,
@@ -3425,6 +3527,8 @@
     };
 
     const refs = {
+      chapterNavigation: document.getElementById("chapterNavigation"),
+      experimentRoot: document.getElementById("experimentRoot"),
       navItems: Array.from(document.querySelectorAll(".module-nav-item")),
       currentModuleText: document.getElementById("currentModuleText"),
       stageModuleName: document.getElementById("stageModuleName"),
@@ -3436,6 +3540,7 @@
       boardShell: document.querySelector("#forwardReverseCanvas .board-shell"),
       boardSvg: document.getElementById("boardSvg"),
       toggleQf: document.getElementById("toggleQf"),
+      openQf: document.getElementById("openQf"),
       pressSb1: document.getElementById("pressSb1"),
       pressSb2: document.getElementById("pressSb2"),
       pressSb3: document.getElementById("pressSb3"),
@@ -11448,6 +11553,18 @@
     function updateModuleShell() {
       const module = moduleCatalog[uiState.currentModule];
       const activeRef = getActiveReferenceConfig();
+      [
+        refs.statusPower,
+        refs.statusKi1,
+        refs.statusKi2,
+        refs.statusMotor,
+        refs.statusProtection,
+        refs.statusMode,
+        refs.statusPhase
+      ].forEach((pill) => {
+        const statusRow = pill.closest(".status-row");
+        if (statusRow) statusRow.classList.remove("hidden");
+      });
 
       refs.currentModuleText.textContent = module.name;
       refs.stageModuleName.textContent = module.name;
@@ -11480,6 +11597,7 @@
 
       [
         refs.toggleQf,
+        refs.openQf,
         refs.pressSb1,
         refs.pressSb2,
         refs.pressSb3,
@@ -11492,6 +11610,12 @@
       ].forEach((button) => {
         button.disabled = !live || (state.calibration.enabled && !isSimulationSolverMode());
       });
+
+      const facadeOperationViewModel = getCurrentFacadeInstance()?.getOperationViewModel();
+      if (facadeOperationViewModel) {
+        renderFacadeOperationViewModel(facadeOperationViewModel);
+        return;
+      }
 
       [
         refs.previewInitial,
@@ -11548,21 +11672,22 @@
       if (!live) {
         refs.toggleQf.classList.remove("on");
         refs.toggleQf.textContent = "QF1 合闸";
+        refs.openQf.textContent = "QF1 分闸";
       } else if (state.calibration.enabled && !isSimulationSolverMode()) {
         refs.toggleQf.classList.remove("on");
         refs.toggleQf.textContent = "几何已锁定";
+        refs.openQf.textContent = "QF1 分闸";
       } else if (isSimulationSolverMode()) {
         const qfClosed = isContinuousControlModule()
           ? state.continuousControl.operationState.qf1 === "closed"
-          : isMainControlModule()
-          ? state.mainControl.operationState.qf1 === "closed"
-          : isJogControlModule()
-            ? state.jogControl.operationState.qf === "closed"
-            : state.operationState.qf1 === "closed";
+          : state.mainControl.operationState.qf1 === "closed";
+        const qfLabel = "QF1";
         refs.toggleQf.classList.toggle("on", qfClosed);
-        refs.toggleQf.textContent = isJogControlModule()
-          ? (qfClosed ? "QF 分闸" : "QF 合闸")
-          : (qfClosed ? "QF1 分闸" : "QF1 合闸");
+        refs.openQf.classList.toggle("on", !qfClosed);
+        refs.toggleQf.textContent = `${qfLabel} 合闸`;
+        refs.openQf.textContent = `${qfLabel} 分闸`;
+        refs.toggleQf.disabled = qfClosed;
+        refs.openQf.disabled = !qfClosed;
       }
     }
 
@@ -11629,55 +11754,9 @@
     }
 
     function buildActionStateModel() {
-      if (isContinuousControlModule()) {
-        const op = state.continuousControl.operationState;
-        const solver = state.continuousControl.solver;
-        return [
-          { id: "qf1", label: "QF1", currentState: op.qf1, availableTransitions: [op.qf1 === "closed" ? "open" : "close"], onAction: "toggleQf1", feedbackText: op.qf1 === "closed" ? "QF1 当前已合闸，可再次分闸。" : "QF1 当前断开，可再次合闸。" },
-          { id: "sb1", label: "启动 SB1", currentState: solver.motorRunning ? "running" : "ready", availableTransitions: [solver.motorRunning ? "show_stop_hint" : "start"], onAction: "startForward", feedbackText: solver.motorRunning ? "SB1 是瞬时启动按钮，连续运行后应通过 SB2 停止。" : "按下 SB1 后，系统会依据自锁支路是否建立来决定是否连续运行。" },
-          { id: "sb2", label: "停止 SB2", currentState: solver.motorRunning ? "running" : "stopped", availableTransitions: [solver.motorRunning ? "stop" : "show_stopped_hint"], onAction: "stopMotor", feedbackText: solver.motorRunning ? "SB2 可切开控制回路并解除自锁。" : "设备当前已经停止，再按 SB2 只会给出状态提示。" },
-          { id: "fr1_trip", label: "FR1 过载", currentState: op.fr1, availableTransitions: [op.fr1 === "overload" ? "show_overload_hint" : "trip"], onAction: "tripFr", feedbackText: op.fr1 === "overload" ? "FR1 已处于动作状态。" : "触发 FR1 后，保护触点断开，接触器释放。" },
-          { id: "fr1_reset", label: "FR1 复位", currentState: op.fr1, availableTransitions: [op.fr1 === "overload" ? "reset" : "show_normal_hint"], onAction: "resetFr", feedbackText: op.fr1 === "overload" ? "FR1 可复位回到待启动状态。" : "FR1 当前处于正常状态。" }
-        ];
-      }
-
-      if (isMainControlModule()) {
-        const op = state.mainControl.operationState;
-        const solver = state.mainControl.solver;
-        return [
-          { id: "qf1", label: "QF1", currentState: op.qf1, availableTransitions: [op.qf1 === "closed" ? "open" : "close"], onAction: "toggleQf1", feedbackText: op.qf1 === "closed" ? "QF1 当前已合闸。" : "QF1 当前断开。" },
-          { id: "sb1", label: "停止 SB1", currentState: solver.motorStates.motor1, availableTransitions: [solver.motorStates.motor1 === "running" ? "stop" : "show_stopped_hint"], onAction: "stopMotor", feedbackText: solver.motorStates.motor1 === "running" ? "SB1 用于停止 1M。" : "1M 当前已经停止。" },
-          { id: "sb2", label: "启动 SB2", currentState: solver.motorStates.motor1, availableTransitions: [solver.motorStates.motor1 === "running" ? "show_running_hint" : "start"], onAction: "startForward", feedbackText: solver.motorStates.motor1 === "running" ? "1M 当前已经运行。" : "SB2 会尝试建立 KM1 控制回路。" },
-          { id: "sb3", label: "停止 SB3", currentState: solver.motorStates.motor2, availableTransitions: [solver.motorStates.motor2 === "running" ? "stop" : "show_stopped_hint"], onAction: "stopMotor2", feedbackText: solver.motorStates.motor2 === "running" ? "SB3 用于停止 2M。" : "2M 当前已经停止。" },
-          { id: "sb4", label: "启动 SB4", currentState: solver.motorStates.motor2, availableTransitions: [solver.motorStates.motor2 === "running" ? "show_running_hint" : "start"], onAction: "startReverse", feedbackText: solver.motorStates.motor2 === "running" ? "2M 当前已经运行。" : "SB4 会尝试建立 KM2 控制回路。" },
-          { id: "fr1_trip", label: "FR1 过载", currentState: op.fr1, availableTransitions: [op.fr1 === "overload" ? "show_overload_hint" : "trip"], onAction: "tripFr", feedbackText: op.fr1 === "overload" ? "FR1 已处于动作状态。" : "FR1 仅保护 1M 支路。" },
-          { id: "fr1_reset", label: "FR1 复位", currentState: op.fr1, availableTransitions: [op.fr1 === "overload" ? "reset" : "show_normal_hint"], onAction: "resetFr", feedbackText: op.fr1 === "overload" ? "FR1 可复位到待命状态。" : "FR1 当前处于正常状态。" },
-          { id: "fr2_trip", label: "FR2 过载", currentState: op.fr2, availableTransitions: [op.fr2 === "overload" ? "show_overload_hint" : "trip"], onAction: "tripFr2", feedbackText: op.fr2 === "overload" ? "FR2 已处于动作状态。" : "FR2 仅保护 2M 支路。" },
-          { id: "fr2_reset", label: "FR2 复位", currentState: op.fr2, availableTransitions: [op.fr2 === "overload" ? "reset" : "show_normal_hint"], onAction: "resetFr2", feedbackText: op.fr2 === "overload" ? "FR2 可复位到待命状态。" : "FR2 当前处于正常状态。" }
-        ];
-      }
-
-      if (isJogControlModule()) {
-        const op = state.jogControl.operationState;
-        const solver = state.jogControl.solver;
-        return [
-          { id: "qf", label: "QF", currentState: op.qf, availableTransitions: [op.qf === "closed" ? "open" : "close"], onAction: "toggleQf1", feedbackText: op.qf === "closed" ? "QF 当前已合闸。" : "QF 当前断开。" },
-          { id: "sb", label: "SB 点动", currentState: op.sb, availableTransitions: [op.sb === "pressed" ? "release" : "press"], onAction: "pressJogControlButton", feedbackText: solver.motorRunning ? "点动按钮按住时电机运行，松开后立即停止。" : "点动按钮是瞬时动作，不能锁存为持续运行。" },
-          { id: "fr_trip", label: "FR 过载", currentState: op.fr, availableTransitions: [op.fr === "overload" ? "show_overload_hint" : "trip"], onAction: "tripFr", feedbackText: op.fr === "overload" ? "FR 已处于动作状态。" : "FR 动作后会切断 KM 控制回路。" },
-          { id: "fr_reset", label: "FR 复位", currentState: op.fr, availableTransitions: [op.fr === "overload" ? "reset" : "show_normal_hint"], onAction: "resetFr", feedbackText: op.fr === "overload" ? "FR 可复位回到待机状态。" : "FR 当前处于正常状态。" }
-        ];
-      }
-
-      if (isForwardReverseModule()) {
-        const op = state.operationState;
-        return [
-          { id: "qf1", label: "QF1", currentState: op.qf1, availableTransitions: [op.qf1 === "closed" ? "open" : "close"], onAction: "toggleQf1", feedbackText: op.qf1 === "closed" ? "QF1 当前已合闸。" : "QF1 当前断开。" },
-          { id: "sb1", label: "停止 SB1", currentState: state.motorState, availableTransitions: [state.motorState === "stopped" ? "show_stopped_hint" : "stop"], onAction: "stopMotor", feedbackText: state.motorState === "stopped" ? "设备当前已经停止。" : "SB1 用于停止当前转向运行。" },
-          { id: "sb2", label: "正转启动 SB2", currentState: state.motorState, availableTransitions: [state.motorState === "forward" ? "show_forward_hint" : "start_forward"], onAction: "startForward", feedbackText: state.motorState === "forward" ? "电机已经处于正转状态。" : "SB2 会尝试建立正转回路。" },
-          { id: "sb3", label: "反转启动 SB3", currentState: state.motorState, availableTransitions: [state.motorState === "reverse" ? "show_reverse_hint" : "start_reverse"], onAction: "startReverse", feedbackText: state.motorState === "reverse" ? "电机已经处于反转状态。" : "SB3 会尝试建立反转回路。" },
-          { id: "fr1_trip", label: "FR1 过载", currentState: op.fr1, availableTransitions: [op.fr1 === "overload" ? "show_overload_hint" : "trip"], onAction: "tripFr", feedbackText: op.fr1 === "overload" ? "FR1 已处于动作状态。" : "FR1 动作后会释放当前接触器。" },
-          { id: "fr1_reset", label: "FR1 复位", currentState: op.fr1, availableTransitions: [op.fr1 === "overload" ? "reset" : "show_normal_hint"], onAction: "resetFr", feedbackText: op.fr1 === "overload" ? "FR1 可复位回到待命状态。" : "FR1 当前处于正常状态。" }
-        ];
+      const facadeInstance = getCurrentFacadeInstance();
+      if (facadeInstance) {
+        return JSON.parse(JSON.stringify(facadeInstance.getOperationViewModel().actionStates || []));
       }
 
       return [];
@@ -11898,16 +11977,19 @@
 
       if (isContinuousControlModule()) {
         renderContinuousControlModule();
+        renderCurrentFacadeStatusViewModel();
         return;
       }
 
       if (isMainControlModule()) {
         renderMainControlModule();
+        renderCurrentFacadeStatusViewModel();
         return;
       }
 
       if (isJogControlModule()) {
         renderJogControlModule();
+        renderCurrentFacadeStatusViewModel();
         return;
       }
 
@@ -11933,6 +12015,7 @@
         updateCalibrationPanels();
       }
       scheduleFormalLabelCollisionAudit();
+      renderCurrentFacadeStatusViewModel();
     }
 
     function setJogControlOperationState(patch, actionMessage) {
@@ -12356,6 +12439,100 @@
           createReplayStep("系统恢复待命", "保护已恢复，但 KM 不会自动吸合，电动机保持停止。", "final", buildJogControlDisplayStateFromSnapshot(finalSnapshot))
         ]
       };
+    }
+
+    function dispatchCurrentFacadeAction(type, payload = {}, source = "platform-shell") {
+      const facadeInstance = getCurrentFacadeInstance();
+      if (!facadeInstance) return null;
+      const action = window.ECTPPlatform.contracts.createAction(type, payload, source);
+      return facadeInstance.dispatchAction(action);
+    }
+
+    function dispatchCurrentFacadeControl(slot, phase = "action", payload = {}) {
+      const facadeInstance = getCurrentFacadeInstance();
+      if (!facadeInstance) return false;
+      const viewModel = facadeInstance.getOperationViewModel();
+      const control = viewModel.controls.find((item) => item.slot === slot && item.visible !== false);
+      let actionType = control && control.action;
+      if (phase === "press") actionType = control && control.pressAction;
+      if (phase === "release") actionType = control && control.releaseAction;
+      if (!actionType) return false;
+      dispatchCurrentFacadeAction(actionType, payload);
+      return true;
+    }
+
+    function handleCloseQfButtonClick() {
+      if (dispatchCurrentFacadeAction("POWER_CLOSE")) return;
+      toggleQf1();
+    }
+
+    function handlePrimaryPlatformAction() {
+      if (dispatchCurrentFacadeControl("primary")) return;
+      handlePrimaryActionButtonClick();
+    }
+
+    function handleSecondaryPlatformAction() {
+      if (dispatchCurrentFacadeControl("secondary")) return;
+      handleSecondaryActionButtonClick();
+    }
+
+    function handleTertiaryPlatformAction() {
+      if (dispatchCurrentFacadeControl("tertiary")) return;
+      handleTertiaryActionButtonClick();
+    }
+
+    function handleQuaternaryPlatformAction() {
+      if (dispatchCurrentFacadeControl("quaternary")) return;
+      handleFourthActionButtonClick();
+    }
+
+    function handleProtectionPlatformAction() {
+      const facadeInstance = getCurrentFacadeInstance();
+      const viewModel = facadeInstance && facadeInstance.getOperationViewModel();
+      const actionType = viewModel && viewModel.protection && viewModel.protection.toggleAction;
+      if (actionType) return dispatchCurrentFacadeAction(actionType);
+      return handleTripFrButtonClick();
+    }
+
+    function handleProtectionResetPlatformAction() {
+      const facadeInstance = getCurrentFacadeInstance();
+      const viewModel = facadeInstance && facadeInstance.getOperationViewModel();
+      const actionType = viewModel && viewModel.protection && viewModel.protection.resetAction;
+      if (actionType) return dispatchCurrentFacadeAction(actionType);
+      return resetFr();
+    }
+
+    function getCurrentFacadeProtection(slot) {
+      const facadeInstance = getCurrentFacadeInstance();
+      const viewModel = facadeInstance && facadeInstance.getOperationViewModel();
+      const protections = viewModel?.protections || [];
+      return protections.find((item) => item.slot === slot && item.visible !== false) || null;
+    }
+
+    function handleSecondaryProtectionPlatformAction() {
+      const actionType = getCurrentFacadeProtection("secondary")?.toggleAction;
+      if (actionType) return dispatchCurrentFacadeAction(actionType);
+      return handleTripFr2ButtonClick();
+    }
+
+    function handleSecondaryProtectionResetPlatformAction() {
+      const actionType = getCurrentFacadeProtection("secondary")?.resetAction;
+      if (actionType) return dispatchCurrentFacadeAction(actionType);
+      return resetFr2();
+    }
+
+
+    function isCurrentQfClosed() {
+      const facadeInstance = getCurrentFacadeInstance();
+      const viewModel = facadeInstance && facadeInstance.getOperationViewModel();
+      if (viewModel) return Boolean(viewModel.power.closed);
+      return false;
+    }
+
+    function openQf1() {
+      if (!isLiveCircuitModule() || !isSimulationSolverMode() || !isCurrentQfClosed()) return;
+      if (dispatchCurrentFacadeAction("POWER_OPEN")) return;
+      toggleQf1();
     }
 
     function toggleQf1() {
@@ -13261,14 +13438,427 @@
     }
 
     function switchModule(moduleId) {
-      if (!moduleCatalog[moduleId]) return;
+      const definition = platformModuleRegistry?.resolve(moduleId);
+      const routeId = definition?.meta.routeId || moduleId;
+      if (!moduleCatalog[routeId]) return;
+      if (platformModuleLoader) {
+        platformModuleLoader.load(moduleId, { reason: "navigation" });
+        return;
+      }
       state.actionFeedback = {
-        ...getDefaultActionFeedback(moduleId),
+        ...getDefaultActionFeedback(routeId),
         actionStates: []
       };
-      uiState.currentModule = moduleId;
+      uiState.currentModule = routeId;
       resetCircuitViewportTransform();
       render();
+    }
+
+    function clearLegacyInteractionDom() {
+      document.querySelectorAll(".pressed").forEach((element) => element.classList.remove("pressed"));
+    }
+
+    function getCurrentFacadeInstance() {
+      const current = platformModuleLoader && platformModuleLoader.getCurrent();
+      if (!current || current.definition.meta.integrationMode !== "facade-v1") return null;
+      return current.instance;
+    }
+
+    function renderFacadeOperationViewModel(viewModel) {
+      const slotMap = {
+        primary: { button: refs.pressSb1, label: refs.pressSb1Label, state: refs.pressSb1State },
+        secondary: { button: refs.pressSb2, label: refs.pressSb2Label, state: refs.pressSb2State },
+        tertiary: { button: refs.pressSb3, label: refs.pressSb3Label, state: refs.pressSb3State },
+        quaternary: { button: refs.pressSb4, label: refs.pressSb4Label, state: refs.pressSb4State }
+      };
+      const controlsBySlot = Object.fromEntries((viewModel.controls || []).map((control) => [control.slot, control]));
+      Object.entries(slotMap).forEach(([slot, binding]) => {
+        const control = controlsBySlot[slot] || { visible: false };
+        binding.button.classList.toggle("hidden", control.visible === false);
+        binding.button.classList.remove("stop", "forward", "reverse");
+        if (control.buttonClass) binding.button.classList.add(control.buttonClass);
+        if (control.label) binding.label.textContent = control.label;
+        if (binding.state) binding.state.textContent = control.stateText || "";
+        binding.button.disabled = control.visible === false
+          || Boolean(control.disabled)
+          || (state.calibration.enabled && !isSimulationSolverMode());
+      });
+
+      refs.toggleQf.textContent = viewModel.power.closeLabel;
+      refs.openQf.textContent = viewModel.power.openLabel;
+      refs.toggleQf.classList.toggle("on", Boolean(viewModel.power.closed));
+      refs.openQf.classList.toggle("on", !viewModel.power.closed);
+      refs.toggleQf.disabled = !viewModel.power.closeEnabled;
+      refs.openQf.disabled = !viewModel.power.openEnabled;
+
+      const protections = viewModel.protections || (viewModel.protection ? [viewModel.protection] : []);
+      const protectionBindings = [
+        {
+          slot: "primary",
+          tripButton: refs.tripFr,
+          tripLabel: refs.tripFrLabel,
+          resetButton: refs.resetFr
+        },
+        {
+          slot: "secondary",
+          tripButton: refs.tripFr2,
+          tripLabel: refs.tripFr2Label,
+          resetButton: refs.resetFr2
+        }
+      ];
+      protectionBindings.forEach((binding) => {
+        const protection = protections.find((item) => (item.slot || "primary") === binding.slot && item.visible !== false);
+        binding.tripButton.classList.toggle("hidden", !protection);
+        binding.resetButton.classList.toggle("hidden", !protection);
+        if (!protection) return;
+        binding.tripLabel.textContent = protection.label || "保护动作";
+        binding.resetButton.textContent = protection.resetLabel || "保护复位";
+      });
+    }
+
+    function renderCurrentFacadeStatusViewModel() {
+      const facadeInstance = getCurrentFacadeInstance();
+      if (!facadeInstance) return;
+      const viewModel = facadeInstance.getStatusViewModel();
+      const statusBindings = [
+        { label: refs.statusPowerLabel, pill: refs.statusPower },
+        { label: refs.statusKi1Label, pill: refs.statusKi1 },
+        { label: refs.statusKi2Label, pill: refs.statusKi2 },
+        { label: refs.statusMotorLabel, pill: refs.statusMotor },
+        { label: refs.statusProtectionLabel, pill: refs.statusProtection },
+        { label: refs.statusModeLabel, pill: refs.statusMode },
+        { label: refs.statusPhaseLabel, pill: refs.statusPhase }
+      ];
+      statusBindings.forEach((binding, index) => {
+        const row = viewModel.rows[index];
+        const statusRow = binding.pill.closest(".status-row");
+        if (statusRow) statusRow.classList.toggle("hidden", !row);
+        if (!row) return;
+        binding.label.textContent = row.label;
+        setPill(binding.pill, row.value, row.tone || "off");
+      });
+    }
+
+    function getLegacyCircuitData(routeId) {
+      if (routeId === "main-control") {
+        return Object.freeze({
+          geometryLockId: MAIN_CONTROL_GEOMETRY_LOCK_ID,
+          reference: { href: MAIN_CONTROL_REFERENCE_HREF, width: MAIN_CONTROL_IMAGE_WIDTH, height: MAIN_CONTROL_IMAGE_HEIGHT },
+          ports: mainControlPortMap,
+          junctions: mainControlJunctions,
+          components: mainControlComponentBBoxes,
+          wires: mainControlWires,
+          deviceEdges: mainControlDeviceEdgeDefs
+        });
+      }
+      if (routeId === "jog-control") {
+        return Object.freeze({
+          geometryLockId: JOG_CONTROL_GEOMETRY_LOCK_ID,
+          reference: { href: JOG_CONTROL_REFERENCE_HREF, width: JOG_CONTROL_IMAGE_WIDTH, height: JOG_CONTROL_IMAGE_HEIGHT },
+          ports: jogControlPortMap,
+          junctions: jogControlJunctions,
+          components: jogControlComponentBBoxes,
+          wires: jogControlWires,
+          deviceEdges: jogControlDeviceEdgeDefs
+        });
+      }
+      if (routeId === "self-lock") {
+        return Object.freeze({
+          geometryLockId: CONTINUOUS_CONTROL_GEOMETRY_LOCK_ID,
+          reference: { href: CONTINUOUS_CONTROL_REFERENCE_HREF, width: CONTINUOUS_CONTROL_IMAGE_WIDTH, height: CONTINUOUS_CONTROL_IMAGE_HEIGHT },
+          ports: continuousControlPortMap,
+          junctions: continuousControlJunctions,
+          components: continuousControlComponentBBoxes,
+          wires: continuousControlWires,
+          deviceEdges: continuousControlDeviceEdgeDefs
+        });
+      }
+      return Object.freeze({
+        geometryLockId: FORWARD_REVERSE_GEOMETRY_LOCK_ID,
+        reference: { href: FORWARD_REVERSE_REFERENCE_HREF, width: CALIBRATION_IMAGE_WIDTH, height: CALIBRATION_IMAGE_HEIGHT },
+        ports: calibrationPortMap,
+        junctions: calibrationJunctions,
+        components: calibrationComponentBBoxes,
+        wires: calibrationWires,
+        deviceEdges: deviceEdgeDefs
+      });
+    }
+
+    function validateLegacyGeometry(routeId) {
+      if (routeId === "main-control") return validateMainControlGeometryData();
+      if (routeId === "jog-control") return validateJogControlGeometryData();
+      if (routeId === "self-lock") return validateContinuousControlGeometryData();
+      return validateCalibrationData();
+    }
+
+    function runLegacyModuleTests(routeId) {
+      if (routeId === "main-control") return runMainControlSolverTests();
+      if (routeId === "jog-control") return runJogControlSolverTests();
+      if (routeId === "self-lock") return runContinuousControlSolverTests();
+      return runSolverTests();
+    }
+
+    function createMainControlModulePort() {
+      function readRawState() {
+        return {
+          operationState: cloneMainControlOperationState(),
+          stableControlState: cloneMainControlCoilState(),
+          solver: cloneFacadePortValue(state.mainControl.solver)
+        };
+      }
+      return Object.freeze({
+        readRawState,
+        reset: () => {
+          resetMainControlSolverState();
+          return readRawState();
+        },
+        solve: (actionMessage) => {
+          recomputeMainControlSolver(actionMessage);
+          return readRawState();
+        },
+        togglePower: () => toggleQf1(),
+        startPrimary: () => startForward(),
+        stopPrimary: () => stopMotor(),
+        startSecondary: () => startReverse(),
+        stopSecondary: () => stopMotor2(),
+        toggleProtection: () => handleTripFrButtonClick(),
+        resetProtection: () => resetFr(),
+        toggleSecondaryProtection: () => handleTripFr2ButtonClick(),
+        resetSecondaryProtection: () => resetFr2(),
+        render: () => render(),
+        pause: () => cancelCurrentFlowReplay(),
+        unmount: () => {
+          cancelCurrentFlowReplay();
+          clearLegacyInteractionDom();
+        },
+        validateGeometry: () => validateMainControlGeometryData(),
+        runTests: () => runMainControlSolverTests(),
+        getFeedback: () => cloneFacadePortValue(state.actionFeedback),
+        getReplaySteps: () => cloneFacadePortValue(
+          state.currentFlow.lastReplayDescriptor && state.currentFlow.lastReplayDescriptor.steps || []
+        )
+      });
+    }
+
+    function createContinuousModulePort() {
+      function readRawState() {
+        return {
+          operationState: cloneContinuousControlOperationState(),
+          stableControlState: cloneContinuousControlCoilState(),
+          solver: cloneFacadePortValue(state.continuousControl.solver)
+        };
+      }
+      return Object.freeze({
+        readRawState,
+        reset: () => {
+          resetContinuousControlSolverState();
+          return readRawState();
+        },
+        solve: (actionMessage) => {
+          recomputeContinuousControlSolver(actionMessage);
+          return readRawState();
+        },
+        togglePower: () => toggleQf1(),
+        startPrimary: () => startForward(),
+        stopPrimary: () => stopMotor(),
+        toggleProtection: () => handleTripFrButtonClick(),
+        resetProtection: () => resetFr(),
+        render: () => render(),
+        pause: () => cancelCurrentFlowReplay(),
+        unmount: () => {
+          cancelCurrentFlowReplay();
+          clearLegacyInteractionDom();
+        },
+        validateGeometry: () => validateContinuousControlGeometryData(),
+        runTests: () => runContinuousControlSolverTests(),
+        getFeedback: () => cloneFacadePortValue(state.actionFeedback),
+        getReplaySteps: () => cloneFacadePortValue(
+          state.currentFlow.lastReplayDescriptor && state.currentFlow.lastReplayDescriptor.steps || []
+        )
+      });
+    }
+
+    function cloneFacadePortValue(value) {
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function createJogModulePort() {
+      function readRawState() {
+        const solver = cloneFacadePortValue(state.jogControl.solver);
+        return {
+          operationState: cloneJogControlOperationState(),
+          solver
+        };
+      }
+      return Object.freeze({
+        readRawState,
+        reset: () => {
+          resetJogControlSolverState();
+          return readRawState();
+        },
+        solve: (actionMessage) => {
+          recomputeJogControlSolver(actionMessage);
+          return readRawState();
+        },
+        togglePower: () => toggleQf1(),
+        pressJog: () => pressJogControlButton(),
+        releaseJog: (reason) => releaseJogControlButton(reason),
+        toggleProtection: () => handleTripFrButtonClick(),
+        resetProtection: () => resetFr(),
+        render: () => render(),
+        pause: () => cancelCurrentFlowReplay(),
+        unmount: () => {
+          cancelCurrentFlowReplay();
+          clearLegacyInteractionDom();
+        },
+        validateGeometry: () => validateJogControlGeometryData(),
+        runTests: () => runJogControlSolverTests(),
+        getFeedback: () => cloneFacadePortValue(state.actionFeedback),
+        getReplaySteps: () => cloneFacadePortValue(
+          state.currentFlow.lastReplayDescriptor && state.currentFlow.lastReplayDescriptor.steps || []
+        )
+      });
+    }
+
+    function createReverseModulePort() {
+      function readRawState() {
+        return {
+          operationState: cloneOperationState(),
+          stableControlState: cloneFacadePortValue(state.solver.stableControlState || {}),
+          solver: cloneFacadePortValue(state.solver)
+        };
+      }
+      return Object.freeze({
+        readRawState,
+        reset: () => {
+          resetSolverState();
+          return readRawState();
+        },
+        solve: (actionMessage) => {
+          recomputeElectricalSolver(actionMessage);
+          return readRawState();
+        },
+        togglePower: () => toggleQf1(),
+        pressStop: () => handlePrimaryActionButtonClick(),
+        pressForward: () => handleSecondaryActionButtonClick(),
+        pressReverse: () => handleTertiaryActionButtonClick(),
+        toggleProtection: () => handleTripFrButtonClick(),
+        resetProtection: () => resetFr(),
+        render: () => render(),
+        pause: () => cancelCurrentFlowReplay(),
+        unmount: () => {
+          cancelCurrentFlowReplay();
+          clearLegacyInteractionDom();
+        },
+        validateGeometry: () => validateCalibrationData(),
+        runTests: () => runSolverTests(),
+        getFeedback: () => cloneFacadePortValue(state.actionFeedback),
+        getReplaySteps: () => cloneFacadePortValue(
+          state.currentFlow.lastReplayDescriptor && state.currentFlow.lastReplayDescriptor.steps || []
+        )
+      });
+    }
+
+    function initializePlatformRuntime() {
+      const platform = window.ECTPPlatform;
+      if (!platform?.contracts
+        || !platform?.registry
+        || !platform?.loader
+        || !platform?.facadeAdapter
+        || !platform?.moduleFacades) {
+        console.error("Platform runtime files did not load; falling back to legacy shell.");
+        render();
+        return;
+      }
+
+      platformModuleRegistry = platform.registry.createModuleRegistry(platform.contracts);
+      const registrations = [
+        platform.moduleDefinitions.createCh02MainControl({
+          circuitData: getLegacyCircuitData("main-control"),
+          port: createMainControlModulePort()
+        }),
+        platform.moduleDefinitions.createCh02Jog({
+          circuitData: getLegacyCircuitData("jog-control"),
+          port: createJogModulePort()
+        }),
+        platform.moduleDefinitions.createCh02Continuous({
+          circuitData: getLegacyCircuitData("self-lock"),
+          port: createContinuousModulePort()
+        }),
+        platform.moduleDefinitions.createCh02Reverse({
+          circuitData: getLegacyCircuitData("forward-reverse"),
+          port: createReverseModulePort()
+        })
+      ];
+      registrations.forEach((definition) => platformModuleRegistry.register(definition));
+
+      platformNavigation = platform.navigation.mountChapterNavigation({
+        container: refs.chapterNavigation,
+        registry: platformModuleRegistry,
+        activeRouteId: uiState.currentModule,
+        onSelect: switchModule
+      });
+      refs.navItems = platformNavigation.getModuleButtons();
+
+      platformModuleLoader = platform.loader.createModuleLoader({
+        registry: platformModuleRegistry,
+        mountRoot: refs.experimentRoot,
+        services: Object.freeze({ setActionFeedback }),
+        setActiveModuleId: (routeId) => {
+          uiState.currentModule = routeId;
+          state.actionFeedback = {
+            ...getDefaultActionFeedback(routeId),
+            actionStates: []
+          };
+          resetCircuitViewportTransform();
+          platformNavigation.updateActive(routeId);
+        }
+      });
+
+      platformModuleLoader.load(uiState.currentModule, { force: true, reason: "platform-start" });
+      window.platformApi = Object.freeze({
+        switchModule,
+        resetCurrent: () => platformModuleLoader.resetCurrent(),
+        dispatchAction: (type, payload = {}, source = "platform-api") => {
+          const current = platformModuleLoader.getCurrent();
+          if (!current) return null;
+          return current.instance.dispatchAction(platform.contracts.createAction(type, payload, source));
+        },
+        getDiagnostics: () => {
+          const current = platformModuleLoader.getCurrent();
+          return {
+            contractVersion: platform.contracts.moduleContractVersion,
+            facadeSchemaVersion: platform.contracts.facadeSchemaVersion,
+            integrationMode: current && current.definition.meta.integrationMode || "legacy-v1",
+            registry: platformModuleRegistry.diagnostics(),
+            loader: platformModuleLoader.diagnostics()
+          };
+        },
+        getCurrentContractReport: () => {
+          const current = platformModuleLoader.getCurrent();
+          return current ? platform.contracts.validateModuleContract(current.instance) : null;
+        },
+        getCurrentStateSnapshot: () => {
+          const current = platformModuleLoader.getCurrent();
+          return current ? current.instance.getStateSnapshot() : null;
+        },
+        getCurrentSolverResult: () => {
+          const current = platformModuleLoader.getCurrent();
+          return current ? current.instance.normalizeSolverResult() : null;
+        },
+        getCurrentOperationViewModel: () => {
+          const current = platformModuleLoader.getCurrent();
+          return current ? current.instance.getOperationViewModel() : null;
+        },
+        getCurrentStatusViewModel: () => {
+          const current = platformModuleLoader.getCurrent();
+          return current ? current.instance.getStatusViewModel() : null;
+        },
+        getCurrentTeachingFeedback: () => {
+          const current = platformModuleLoader.getCurrent();
+          return current ? current.instance.buildTeachingFeedback() : null;
+        }
+      });
     }
 
     function applyCalibrationQueryPreset() {
@@ -13407,32 +13997,29 @@
       render();
     });
 
-    refs.toggleQf.addEventListener("click", toggleQf1);
-    refs.pressSb1.addEventListener("click", handlePrimaryActionButtonClick);
-    refs.pressSb2.addEventListener("click", handleSecondaryActionButtonClick);
-    refs.pressSb3.addEventListener("click", handleTertiaryActionButtonClick);
-    refs.pressSb4.addEventListener("click", handleFourthActionButtonClick);
+    refs.toggleQf.addEventListener("click", handleCloseQfButtonClick);
+    refs.openQf.addEventListener("click", openQf1);
+    refs.pressSb1.addEventListener("click", handlePrimaryPlatformAction);
+    refs.pressSb2.addEventListener("click", handleSecondaryPlatformAction);
+    refs.pressSb3.addEventListener("click", handleTertiaryPlatformAction);
+    refs.pressSb4.addEventListener("click", handleQuaternaryPlatformAction);
     refs.pressSb2.addEventListener("pointerdown", (event) => {
-      if (!isJogControlModule()) return;
+      if (!dispatchCurrentFacadeControl("secondary", "press", { reason: "SB pointerdown" })) return;
       event.preventDefault();
-      pressJogControlButton();
     });
     refs.pressSb2.addEventListener("pointerup", () => {
-      if (!isJogControlModule()) return;
-      releaseJogControlButton("SB pointerup");
+      dispatchCurrentFacadeControl("secondary", "release", { reason: "SB pointerup" });
     });
     refs.pressSb2.addEventListener("pointerleave", () => {
-      if (!isJogControlModule()) return;
-      releaseJogControlButton("SB pointerleave");
+      dispatchCurrentFacadeControl("secondary", "release", { reason: "SB pointerleave" });
     });
     refs.pressSb2.addEventListener("pointercancel", () => {
-      if (!isJogControlModule()) return;
-      releaseJogControlButton("SB pointercancel");
+      dispatchCurrentFacadeControl("secondary", "release", { reason: "SB pointercancel" });
     });
-    refs.tripFr.addEventListener("click", handleTripFrButtonClick);
-    refs.tripFr2.addEventListener("click", handleTripFr2ButtonClick);
-    refs.resetFr.addEventListener("click", resetFr);
-    refs.resetFr2.addEventListener("click", resetFr2);
+    refs.tripFr.addEventListener("click", handleProtectionPlatformAction);
+    refs.tripFr2.addEventListener("click", handleSecondaryProtectionPlatformAction);
+    refs.resetFr.addEventListener("click", handleProtectionResetPlatformAction);
+    refs.resetFr2.addEventListener("click", handleSecondaryProtectionResetPlatformAction);
     refs.resetDemo.addEventListener("click", resetAll);
     refs.showPrinciplePlayback.addEventListener("click", () => {
       if (!isLiveCircuitModule() || !state.currentFlow.lastReplayDescriptor?.steps?.length) return;
@@ -13473,11 +14060,7 @@
       render();
     });
     refs.boardFr1.addEventListener("click", () => {
-      if (state.overload) {
-        resetFr();
-      } else {
-        tripFr();
-      }
+      handleProtectionPlatformAction();
     });
     refs.boardMotor.addEventListener("click", () => {
       const messages = {
@@ -13489,35 +14072,40 @@
       setInfo("motor", messages[state.motorState]);
       render();
     });
-    refs.boardSb1.addEventListener("click", handlePrimaryActionButtonClick);
-    refs.boardSb2.addEventListener("click", handleSecondaryActionButtonClick);
-    refs.boardSb3.addEventListener("click", stopMotor2);
+    refs.boardSb1.addEventListener("click", handlePrimaryPlatformAction);
+    refs.boardSb2.addEventListener("click", handleSecondaryPlatformAction);
+    refs.boardSb3.addEventListener("click", handleTertiaryPlatformAction);
     refs.simulationComponentLayer.addEventListener("click", (event) => {
       if (!isContinuousControlModule()) return;
       const piece = event.target.closest?.("[data-sim-piece]");
       if (!piece) return;
-      if (handleContinuousControlCanvasClick(piece.dataset.simPiece)) {
-        event.preventDefault();
-      }
+      const actionByPiece = {
+        cmp_cont_sb1: "START_PRIMARY_PRESS",
+        cmp_cont_sb2: "STOP_PRIMARY_PRESS",
+        cmp_cont_fr1_main: "PROTECTION_TOGGLE",
+        cmp_cont_fr1_nc: "PROTECTION_TOGGLE"
+      };
+      const actionType = piece.dataset.simPiece === "cmp_cont_qf1"
+        ? isCurrentQfClosed() ? "POWER_OPEN" : "POWER_CLOSE"
+        : actionByPiece[piece.dataset.simPiece];
+      if (!actionType) return;
+      dispatchCurrentFacadeAction(actionType, {}, "continuous-canvas");
+      event.preventDefault();
     });
     refs.simulationComponentLayer.addEventListener("pointerdown", (event) => {
-      if (!isJogControlModule()) return;
       const piece = event.target.closest?.('[data-sim-piece="cmp_jog_sb"]');
       if (!piece) return;
+      if (!dispatchCurrentFacadeControl("secondary", "press", { reason: "canvas pointerdown" })) return;
       event.preventDefault();
-      pressJogControlButton();
     });
     document.addEventListener("pointerup", () => {
-      if (!isJogControlModule()) return;
-      releaseJogControlButton("document pointerup");
+      dispatchCurrentFacadeControl("secondary", "release", { reason: "document pointerup" });
     });
     document.addEventListener("pointercancel", () => {
-      if (!isJogControlModule()) return;
-      releaseJogControlButton("document pointercancel");
+      dispatchCurrentFacadeControl("secondary", "release", { reason: "document pointercancel" });
     });
     window.addEventListener("blur", () => {
-      if (!isJogControlModule()) return;
-      releaseJogControlButton("window blur release");
+      dispatchCurrentFacadeControl("secondary", "release", { reason: "window blur release" });
     });
     refs.navItems.forEach((button) => {
       button.addEventListener("click", () => switchModule(button.dataset.module));
@@ -13760,7 +14348,7 @@
     resetContinuousControlSolverState();
     resetJogControlSolverState();
     applyCalibrationQueryPreset();
-    render();
+    initializePlatformRuntime();
   </script>
 </body>
 </html>
