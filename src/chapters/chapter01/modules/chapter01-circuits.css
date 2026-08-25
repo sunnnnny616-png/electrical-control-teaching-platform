@@ -15,10 +15,6 @@
 [data-module^="ch01_"] .ch01-wire-base.ch01-phase-l2 { stroke: #15944f; }
 [data-module^="ch01_"] .ch01-wire-base.ch01-phase-l3 { stroke: #e84343; }
 [data-module^="ch01_"] .ch01-wire-control { stroke-width: 3.5; }
-[data-module^="ch01_"] .ch01-wire-flow { fill: none; stroke: #17a96b; stroke-width: 5; stroke-linecap: round; stroke-dasharray: 10 9; animation: ch01-current-flow 1s linear infinite; }
-[data-module^="ch01_"] .ch01-wire-flow.ch01-phase-l1 { stroke: #f0b500; }
-[data-module^="ch01_"] .ch01-wire-flow.ch01-phase-l2 { stroke: #12b663; }
-[data-module^="ch01_"] .ch01-wire-flow.ch01-phase-l3 { stroke: #ff4d4f; }
 [data-module^="ch01_"] .ch01-wire-partial { fill: none; stroke: #e0a32f; stroke-width: 4; stroke-dasharray: 7 8; }
 [data-module^="ch01_"] .ch01-terminal { fill: #fff; stroke: #526176; stroke-width: 2; }
 [data-module^="ch01_"] .ch01-contact { stroke: #5c697a; stroke-width: 5; stroke-linecap: round; transition: 160ms ease; }
@@ -58,7 +54,6 @@
 [data-module^="ch01_"] .ch01-target-circuit .ch01-zone-title { font-size: 17px; fill: #172033; }
 [data-module^="ch01_"] .ch01-target-circuit .ch01-wire-base { stroke-width: 3.2; }
 [data-module^="ch01_"] .ch01-target-circuit .ch01-wire-control { stroke: #aeb8c7; }
-[data-module^="ch01_"] .ch01-target-circuit .ch01-wire-flow { stroke-width: 4.5; }
 [data-module^="ch01_"] .ch01-target-circuit .ch01-phase-label {
   font-size: 16px;
   font-weight: 800;
@@ -141,7 +136,6 @@
   }
 }
 
-@keyframes ch01-current-flow { to { stroke-dashoffset: -19; } }
 @keyframes ch01-motor-spin { to { transform: rotate(360deg); } }
 
 @media (max-width: 1100px) {
