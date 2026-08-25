@@ -9,6 +9,7 @@ const captureDirectory = process.env.ECTP_CAPTURE_DIR || "";
 const circuitCss = fs.readFileSync(path.join(repositoryRoot, "src/chapters/chapter01/modules/chapter01-circuits.css"), "utf8");
 const indexHtml = fs.readFileSync(path.join(repositoryRoot, "index.html"), "utf8");
 const matureShellCss = [...indexHtml.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)].map((match) => match[1]).join("\n");
+const matureFlowCss = matureShellCss.match(/\.current-flow-path\s*\{([\s\S]*?)\}/)?.[1] || "";
 const standaloneCircuitCss = `${matureShellCss}\n${circuitCss
   .replaceAll('[data-module^="ch01_"] ', "")
   .replaceAll('[data-module="ch01_jog"] ', "")
@@ -123,9 +124,16 @@ definitions.forEach((definition) => {
       && circuitCss.includes('transform-origin: center;'),
     matureLaptopInlineScale: initialMarkup.includes('transform:scale(.9384);transform-origin:center'),
     stableMotorRotorAnchor: /<g transform="translate\(\d+ \d+\)"><g class="sim-motor-rotor forward">/.test(activeMarkup),
+    standardCoilWinding: definition.meta.moduleId === "ch01_jog"
+      ? activeMarkup.includes('d="M928 606 q8 -48.5 16 0')
+      : activeMarkup.includes('d="M1066 297 q4.4 -25 8.8 0')
+        && !activeMarkup.includes('d="M1066 297 q8 -25 16 0'),
     playbackVisibleAtLaptopHeight: circuitCss.includes('height: calc(100vh - 240px);')
       && circuitCss.includes('min-height: 128px;'),
-    activeCurrentFlow: activeMarkup.includes("ch01-wire-flow"),
+    matureActiveCurrentFlow: activeMarkup.includes("current-flow-path main phase-l1") && activeMarkup.includes("current-flow-path control"),
+    matureFlowAnimationStyle: matureFlowCss.includes("stroke-width: 4.2;")
+      && matureFlowCss.includes("vector-effect: non-scaling-stroke;")
+      && matureFlowCss.includes("animation: currentFlowLine 1.1s linear infinite;"),
     namespacedRoot: activeMarkup.includes(`data-module="${definition.meta.moduleId}"`),
     noCanvasStateCard: !activeMarkup.includes("ch01-state-badge"),
     replayReady: instance.buildReplaySteps().length > 0
