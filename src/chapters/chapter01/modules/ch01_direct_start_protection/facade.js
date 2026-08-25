@@ -8,7 +8,7 @@
     circuitData: platform.chapterCircuitData.ch01DirectStartProtection,
     mode: "self_hold",
     copy: {
-      title: "综合直接启动保护实验",
+      title: "综合直接启动保护演示",
       initialTitle: "综合直接启动保护原理",
       initialText: "QF1、FU、KM1、FR1 和 M 构成完整直接启动链路；SB1 启动并自锁，SB2 停止，FR1 过载时切断控制回路。",
       powerTitle: "QF1 动作反馈",
