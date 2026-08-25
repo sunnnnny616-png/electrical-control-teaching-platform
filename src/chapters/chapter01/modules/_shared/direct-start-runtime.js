@@ -10,6 +10,64 @@
   })[character]);
   const pathData = (points) => points.map((point, index) => `${index ? "L" : "M"}${point.x} ${point.y}`).join(" ");
 
+  function appendGraphItem(adjacency, fromPort, toPort, item) {
+    if (!adjacency.has(fromPort)) adjacency.set(fromPort, []);
+    if (!adjacency.has(toPort)) adjacency.set(toPort, []);
+    adjacency.get(fromPort).push({ to: toPort, item });
+    adjacency.get(toPort).push({ to: fromPort, item });
+  }
+
+  function findPathItems(adjacency, startPort, endPort) {
+    if (startPort === endPort) return [];
+    const queue = [startPort];
+    const visited = new Set(queue);
+    const previous = new Map();
+    while (queue.length) {
+      const current = queue.shift();
+      for (const neighbor of adjacency.get(current) || []) {
+        if (visited.has(neighbor.to)) continue;
+        visited.add(neighbor.to);
+        previous.set(neighbor.to, { port: current, item: neighbor.item });
+        if (neighbor.to === endPort) {
+          const path = [];
+          let cursor = endPort;
+          while (previous.has(cursor)) {
+            const step = previous.get(cursor);
+            path.unshift(step.item);
+            cursor = step.port;
+          }
+          return path;
+        }
+        queue.push(neighbor.to);
+      }
+    }
+    return [];
+  }
+
+  function collectReachablePorts(adjacency, startPort) {
+    const visited = new Set([startPort]);
+    const queue = [startPort];
+    while (queue.length) {
+      const current = queue.shift();
+      (adjacency.get(current) || []).forEach((neighbor) => {
+        if (visited.has(neighbor.to)) return;
+        visited.add(neighbor.to);
+        queue.push(neighbor.to);
+      });
+    }
+    return visited;
+  }
+
+  function collectPathMembership(items) {
+    const wireIds = new Set();
+    const edgeIds = new Set();
+    items.forEach((item) => {
+      if (item.type === "wire") wireIds.add(item.wireId);
+      if (item.type === "edge") edgeIds.add(item.edgeId);
+    });
+    return { wireIds, edgeIds };
+  }
+
   function createDirectStartFacade(options) {
     const { moduleId, routeId, circuitData, mode, copy } = options;
     const contracts = platform.contracts;
@@ -28,46 +86,126 @@
         : { qf: "open", start: "released", stop: "released", fr: "normal" };
     }
 
-    function evaluate(operation, previousKm = false, lastAction = "initial") {
+    function getEdgeConductive(edge, operation, assumedKm, includeCoil = true) {
       const powerClosed = operation.qf === "closed";
       const protectionNormal = operation.fr === "normal";
-      let kmEnergized = false;
-      if (mode === "jog") {
-        kmEnergized = powerClosed && protectionNormal && operation.jog === "pressed";
-      } else {
-        const stopConductive = operation.stop !== "pressed";
-        const startPath = operation.start === "pressed";
-        const selfHoldPath = Boolean(previousKm);
-        kmEnergized = powerClosed && protectionNormal && stopConductive && (startPath || selfHoldPath);
+      if (edge.behavior === "STATIC") return true;
+      if (edge.behavior === "QF") return powerClosed;
+      if (edge.behavior === "COIL") return includeCoil;
+      if (edge.behavior === "NC") {
+        return edge.edgeId.includes("fr") ? protectionNormal : operation.stop !== "pressed";
       }
-      const motorRunning = powerClosed && protectionNormal && kmEnergized;
-      const mainWireIds = circuitData.wires.filter((wire) => wire.circuitDomain === "main").map((wire) => wire.wireId);
-      const controlWireIds = circuitData.wires.filter((wire) => wire.circuitDomain === "control").map((wire) => wire.wireId);
-      const supplyWireIds = circuitData.wires.filter((wire) => wire.group === "control_supply").map((wire) => wire.wireId);
-      const controlComplete = kmEnergized;
+      if (edge.behavior === "NO") {
+        if (edge.edgeId.includes("km")) return Boolean(assumedKm);
+        return mode === "jog" ? operation.jog === "pressed" : operation.start === "pressed";
+      }
+      return false;
+    }
+
+    function buildElectricalGraph(domain, operation, assumedKm) {
+      const adjacency = new Map();
+      circuitData.wires
+        .filter((wire) => wire.circuitDomain === domain)
+        .forEach((wire) => appendGraphItem(adjacency, wire.fromPort, wire.toPort, { type: "wire", wireId: wire.wireId }));
+      circuitData.deviceEdges
+        .filter((edge) => edge.circuitDomain === domain && getEdgeConductive(edge, operation, assumedKm, true))
+        .forEach((edge) => appendGraphItem(adjacency, edge.fromPort, edge.toPort, { type: "edge", edgeId: edge.edgeId }));
+      return adjacency;
+    }
+
+    function solveControlCircuit(operation, previousKm) {
+      const sourcePort = `${moduleId}__port__ctrl_l`;
+      const returnPort = `${moduleId}__port__ctrl_r`;
+      const coilEdgeId = circuitData.deviceEdges.find((edge) => edge.behavior === "COIL")?.edgeId;
+      let assumedKm = Boolean(previousKm);
+      let iterationCount = 0;
+      let converged = false;
+      let path = [];
+
+      while (iterationCount < 8) {
+        iterationCount += 1;
+        const graph = buildElectricalGraph("control", operation, assumedKm);
+        path = operation.qf === "closed" ? findPathItems(graph, sourcePort, returnPort) : [];
+        const nextKm = Boolean(coilEdgeId && path.some((item) => item.edgeId === coilEdgeId));
+        if (nextKm === assumedKm) {
+          converged = true;
+          assumedKm = nextKm;
+          break;
+        }
+        assumedKm = nextKm;
+      }
+
+      const graph = buildElectricalGraph("control", operation, assumedKm);
+      path = operation.qf === "closed" ? findPathItems(graph, sourcePort, returnPort) : [];
+      const membership = collectPathMembership(path);
+      const partialWireIds = new Set();
+      if (operation.qf === "closed" && !assumedKm) {
+        const reachable = collectReachablePorts(graph, sourcePort);
+        circuitData.wires.filter((wire) => wire.circuitDomain === "control").forEach((wire) => {
+          if (reachable.has(wire.fromPort) && reachable.has(wire.toPort)) partialWireIds.add(wire.wireId);
+        });
+      }
+      return {
+        kmEnergized: assumedKm,
+        converged,
+        iterationCount,
+        activeWireIds: membership.wireIds,
+        activeEdgeIds: membership.edgeIds,
+        partialWireIds
+      };
+    }
+
+    function solveMainCircuit(operation, kmEnergized) {
+      const graph = buildElectricalGraph("main", operation, kmEnergized);
+      const phasePorts = [["l1", "m_u"], ["l2", "m_v"], ["l3", "m_w"]];
+      const paths = phasePorts.map(([source, load]) => findPathItems(
+        graph,
+        `${moduleId}__port__${source}`,
+        `${moduleId}__port__${load}`
+      ));
+      const motorRunning = paths.every((path) => path.length > 0);
+      const activeWireIds = new Set();
+      const activeEdgeIds = new Set();
+      if (motorRunning) {
+        paths.forEach((path) => {
+          const membership = collectPathMembership(path);
+          membership.wireIds.forEach((wireId) => activeWireIds.add(wireId));
+          membership.edgeIds.forEach((edgeId) => activeEdgeIds.add(edgeId));
+        });
+      }
+      return { motorRunning, activeWireIds, activeEdgeIds };
+    }
+
+    function evaluate(operation, previousKm = false, lastAction = "initial") {
+      const control = solveControlCircuit(operation, previousKm);
+      const main = solveMainCircuit(operation, control.kmEnergized);
       const edgeStates = {};
       circuitData.deviceEdges.forEach((edge) => {
-        if (edge.behavior === "QF") edgeStates[edge.edgeId] = powerClosed;
-        else if (edge.behavior === "COIL") edgeStates[edge.edgeId] = kmEnergized;
-        else if (edge.behavior === "NC") edgeStates[edge.edgeId] = edge.edgeId.includes("fr") ? protectionNormal : operation.stop !== "pressed";
-        else if (edge.edgeId.includes("aux")) edgeStates[edge.edgeId] = kmEnergized;
-        else if (edge.edgeId.includes("sb1") || edge.edgeId.endsWith("sb_no")) edgeStates[edge.edgeId] = mode === "jog" ? operation.jog === "pressed" : operation.start === "pressed";
-        else edgeStates[edge.edgeId] = kmEnergized;
+        edgeStates[edge.edgeId] = {
+          conductive: edge.behavior === "COIL"
+            ? control.kmEnergized
+            : getEdgeConductive(edge, operation, control.kmEnergized, false),
+          deviceState: edge.behavior === "COIL" || edge.edgeId.includes("km")
+            ? (control.kmEnergized ? "energized" : "deenergized")
+            : undefined
+        };
       });
       return {
         ...contracts.createEmptySolverResult(moduleId),
-        stableDeviceStates: { KM: kmEnergized },
+        stableDeviceStates: { KM: control.kmEnergized },
         edgeStates,
-        activeMainWireIds: motorRunning ? mainWireIds : [],
-        activeControlWireIds: controlComplete ? controlWireIds : powerClosed ? supplyWireIds : [],
-        partialWireIds: powerClosed && !controlComplete ? supplyWireIds : [],
-        motorStates: { M: { running: motorRunning, direction: motorRunning ? "forward" : "none" } },
+        activeMainWireIds: [...main.activeWireIds],
+        activeControlWireIds: [...control.activeWireIds],
+        partialWireIds: [...control.partialWireIds],
+        motorStates: { M: { running: main.motorRunning, direction: main.motorRunning ? "forward" : "none" } },
         protectionStates: { FR: { state: operation.fr, tripped: operation.fr === "overload" } },
-        converged: true,
-        iterationCount: mode === "jog" ? 1 : 2,
+        converged: control.converged,
+        iterationCount: control.iterationCount,
         lastAction: { message: lastAction },
         extension: {
-          selfHoldConductive: mode === "self_hold" && kmEnergized,
+          activeControlEdgeIds: [...control.activeEdgeIds],
+          activeMainEdgeIds: [...main.activeEdgeIds],
+          selfHoldConductive: mode === "self_hold" && control.kmEnergized,
           controlSupplyBoundary: "QF/FU downstream two-wire control supply",
           referencePages: [...circuitData.referencePages]
         }
@@ -302,13 +440,22 @@
       return circuitData.wires.map((wire) => {
         const d = pathData(wire.routePoints);
         const domainClass = wire.circuitDomain === "main" ? "ch01-wire-main" : "ch01-wire-control";
-        const overlay = active.has(wire.wireId) ? `<path class="ch01-wire-flow ${domainClass}" d="${d}" />` : partial.has(wire.wireId) ? `<path class="ch01-wire-partial" d="${d}" />` : "";
-        return `<g data-wire-id="${wire.wireId}"><path class="ch01-wire-base ${domainClass}" d="${d}" />${overlay}</g>`;
+        const localWireId = wire.wireId.split("__wire__")[1] || "";
+        const phaseIndex = wire.circuitDomain === "main" ? ((Number(localWireId.slice(1)) - 1) % 3) + 1 : 0;
+        const phaseClass = phaseIndex ? `ch01-phase-l${phaseIndex}` : "";
+        const overlay = active.has(wire.wireId) ? `<path class="ch01-wire-flow ${domainClass} ${phaseClass}" d="${d}" />` : partial.has(wire.wireId) ? `<path class="ch01-wire-partial" d="${d}" />` : "";
+        return `<g data-wire-id="${wire.wireId}"><path class="ch01-wire-base ${domainClass} ${phaseClass}" d="${d}" />${overlay}</g>`;
       }).join("");
     }
 
-    function poleContact(x, y, closed, label) {
-      return `<g><circle cx="${x}" cy="${y}" r="4" class="ch01-terminal"/><circle cx="${x}" cy="${y + 45}" r="4" class="ch01-terminal"/><line x1="${x}" y1="${y}" x2="${closed ? x : x + 20}" y2="${y + 38}" class="ch01-contact ${closed ? "is-closed" : ""}"/><text x="${x - 18}" y="${y + 25}" class="ch01-device-label">${label}</text></g>`;
+    function poleContact(x, y, closed, label, height = 45) {
+      return `<g><circle cx="${x}" cy="${y}" r="4" class="ch01-terminal"/><circle cx="${x}" cy="${y + height}" r="4" class="ch01-terminal"/><line x1="${x}" y1="${y + 5}" x2="${closed ? x : x + 20}" y2="${y + height - 5}" class="ch01-contact ${closed ? "is-closed" : ""}"/><text x="${x - 18}" y="${y + (height / 2) + 6}" class="ch01-device-label">${label}</text></g>`;
+    }
+
+    function horizontalContact(x1, x2, y, closed, label, terminalLeft, terminalRight) {
+      const bladeEndX = closed ? x2 - 6 : x2 - 12;
+      const bladeEndY = closed ? y : y - 20;
+      return `<g><rect class="ch01-hit-target" x="${x1 - 12}" y="${y - 34}" width="${x2 - x1 + 24}" height="68" rx="10"/><circle cx="${x1}" cy="${y}" r="4" class="ch01-terminal"/><circle cx="${x2}" cy="${y}" r="4" class="ch01-terminal"/><line x1="${x1 + 6}" y1="${y}" x2="${bladeEndX}" y2="${bladeEndY}" class="ch01-contact ${closed ? "is-closed" : ""}"/><text x="${(x1 + x2) / 2}" y="${y - 27}" class="ch01-device-label ch01-label-centered">${label}</text><text x="${x1}" y="${y + 24}" class="ch01-terminal-number">${terminalLeft}</text><text x="${x2}" y="${y + 24}" class="ch01-terminal-number">${terminalRight}</text></g>`;
     }
 
     function renderSvg(display) {
@@ -321,30 +468,29 @@
       const kmLabel = mode === "jog" ? "KM" : "KM1";
       const frLabel = mode === "jog" ? "FR" : "FR1";
       const control = mode === "jog" ? `
-        <g data-action="JOG_PRESS" data-release-action="JOG_RELEASE" class="ch01-clickable">${poleContact(690,158,startClosed,"SB")}</g>
-        <g class="ch01-coil ${km ? "is-active" : ""}"><rect x="790" y="150" width="80" height="60" rx="8"/><text x="830" y="187">KM</text></g>
-        <g data-action="PROTECTION_TOGGLE" class="ch01-clickable">${poleContact(970,158,!overload,"FR")}</g>
+        <g data-action="JOG_PRESS" data-release-action="JOG_RELEASE" class="ch01-clickable">${horizontalContact(650,730,180,startClosed,"SB","13","14")}</g>
+        <g class="ch01-coil ${km ? "is-active" : ""}"><rect x="790" y="150" width="80" height="60" rx="8"/><text x="830" y="187">KM</text><text x="790" y="230" class="ch01-terminal-number">A1</text><text x="870" y="230" class="ch01-terminal-number">A2</text></g>
+        <g data-action="PROTECTION_TOGGLE" class="ch01-clickable">${horizontalContact(930,1010,180,!overload,"FR","95","96")}</g>
         <g class="ch01-fuse ch01-fuse-control"><rect x="540" y="166" width="50" height="28"/><line x1="548" y1="180" x2="582" y2="180"/><text x="565" y="145">FU2</text></g>
         <g class="ch01-fuse ch01-fuse-control"><rect x="1070" y="166" width="50" height="28"/><line x1="1078" y1="180" x2="1112" y2="180"/></g>
       ` : `
-        <g data-action="START_PRIMARY_PRESS" class="ch01-clickable">${poleContact(695,128,startClosed,"SB1")}</g>
-        <g class="ch01-aux ${km ? "is-active" : ""}">${poleContact(695,203,km,"KM1")}</g>
-        <g data-action="STOP_PRIMARY_PRESS" class="ch01-clickable">${poleContact(870,128,stopClosed,"SB2")}</g>
-        <g class="ch01-coil ${km ? "is-active" : ""}"><rect x="960" y="120" width="80" height="60" rx="8"/><text x="1000" y="157">KM1</text></g>
-        <g data-action="PROTECTION_TOGGLE" class="ch01-clickable">${poleContact(1130,128,!overload,"FR1")}</g>
+        <g data-action="START_PRIMARY_PRESS" class="ch01-clickable">${horizontalContact(650,740,150,startClosed,"SB1","13","14")}</g>
+        <g class="ch01-aux ${km ? "is-active" : ""}">${horizontalContact(650,740,225,km,"KM1","13","14")}</g>
+        <g data-action="STOP_PRIMARY_PRESS" class="ch01-clickable">${horizontalContact(830,910,150,stopClosed,"SB2","11","12")}</g>
+        <g class="ch01-coil ${km ? "is-active" : ""}"><rect x="960" y="120" width="80" height="60" rx="8"/><text x="1000" y="157">KM1</text><text x="960" y="201" class="ch01-terminal-number">A1</text><text x="1040" y="201" class="ch01-terminal-number">A2</text></g>
+        <g data-action="PROTECTION_TOGGLE" class="ch01-clickable">${horizontalContact(1090,1170,150,!overload,"FR1","95","96")}</g>
         <g class="ch01-fuse ch01-fuse-control"><rect x="540" y="136" width="50" height="28"/><line x1="548" y1="150" x2="582" y2="150"/><text x="565" y="115">FU</text></g>
       `;
-      return `<svg class="ch01-circuit-svg" data-module="${moduleId}" viewBox="0 0 1280 620" role="img" aria-label="${escapeHtml(copy.title)}电路图">
+      return `<svg class="ch01-circuit-svg" data-module="${moduleId}" viewBox="0 0 1280 610" role="img" aria-label="${escapeHtml(copy.title)}电路图">
         <text x="42" y="38" class="ch01-zone-title main">主电路</text><text x="480" y="38" class="ch01-zone-title control">控制电路</text>
         <g class="ch01-wires">${wireMarkup(display)}</g>
         <g class="ch01-supplies"><text x="120" y="42">L1</text><text x="210" y="42">L2</text><text x="300" y="42">L3</text></g>
         <g data-action="${powerClosed ? "POWER_OPEN" : "POWER_CLOSE"}" class="ch01-clickable ch01-qf">${poleContact(120,100,powerClosed,qfLabel)}${poleContact(210,100,powerClosed,"")}${poleContact(300,100,powerClosed,"")}</g>
         <g class="ch01-fuse">${[120,210,300].map((x,index)=>`<rect x="${x-10}" y="170" width="20" height="45"/><line x1="${x}" y1="176" x2="${x}" y2="209"/>${index===0?'<text x="75" y="198">FU1</text>':''}`).join("")}</g>
-        <g class="ch01-km-main ${km ? "is-active" : ""}">${poleContact(120,260,km,kmLabel)}${poleContact(210,260,km,"")}${poleContact(300,260,km,"")}</g>
+        <g class="ch01-km-main ${km ? "is-active" : ""}">${poleContact(120,260,km,kmLabel,55)}${poleContact(210,260,km,"",55)}${poleContact(300,260,km,"",55)}</g>
         <g data-action="PROTECTION_TOGGLE" class="ch01-fr-main ch01-clickable ${overload ? "is-overload" : ""}"><rect x="90" y="350" width="240" height="55" rx="8"/><path d="M110 378 h35 l12 -14 l18 28 l18 -28 l18 28 l18 -28 l18 14 h55"/><text x="48" y="384">${frLabel}</text></g>
-        <g class="ch01-motor ${display.motorRunning ? "is-running" : ""} ${overload ? "is-fault" : ""}"><circle cx="210" cy="525" r="62"/><text x="210" y="536">M</text><path class="ch01-rotor" d="M210 482 l14 30 l30 13 l-30 14 l-14 30 l-14-30 l-30-14 l30-13z"/></g>
+        <g class="ch01-motor ${display.motorRunning ? "is-running" : ""} ${overload ? "is-fault" : ""}"><rect class="ch01-motor-terminal-block" x="166" y="456" width="88" height="30" rx="6"/><circle class="ch01-motor-terminal" cx="180" cy="470" r="4"/><circle class="ch01-motor-terminal" cx="210" cy="470" r="4"/><circle class="ch01-motor-terminal" cx="240" cy="470" r="4"/><circle cx="210" cy="535" r="62"/><path class="ch01-rotor" d="M210 492 l14 30 l30 13 l-30 14 l-14 30 l-14-30 l-30-14 l30-13z"/><text x="210" y="546">M</text></g>
         <g class="ch01-control-components">${control}</g>
-        <g class="ch01-state-badge ${overload ? "error" : display.motorRunning ? "running" : "idle"}"><rect x="500" y="470" width="680" height="92" rx="16"/><text x="530" y="510">${overload ? "保护动作：FR 常闭触点断开，KM 释放" : display.motorRunning ? mode === "jog" ? "运行：SB 按住，KM 得电，电机转动" : "运行：KM1 自锁保持，电机连续转动" : powerClosed ? "待命：电源已接通，等待操作" : "断电：QF 处于分闸状态"}</text><text x="530" y="542" class="sub">${mode === "jog" ? "点动无自锁，松开按钮立即停止" : "SB1 启动 / SB2 停止 / FR1 过载保护"}</text></g>
       </svg>`;
     }
 
@@ -434,31 +580,51 @@
 
     function validateGeometry() {
       const errors = [];
+      const namespacePrefix = `${moduleId}__`;
       const unique = (items, key, label) => {
         const seen = new Set();
         items.forEach((item) => { if (seen.has(item[key])) errors.push(`duplicate ${label}: ${item[key]}`); seen.add(item[key]); });
         return seen;
       };
       const ports = unique(circuitData.ports, "portId", "portId");
+      const portMap = new Map(circuitData.ports.map((item) => [item.portId, item]));
       unique(circuitData.wires, "wireId", "wireId");
       unique(circuitData.components, "componentId", "componentId");
       unique(circuitData.deviceEdges, "edgeId", "edgeId");
+      circuitData.ports.forEach((item) => {
+        if (!item.portId.startsWith(`${namespacePrefix}port__`)) errors.push(`invalid port namespace: ${item.portId}`);
+      });
       circuitData.components.forEach((component) => {
+        if (!component.componentId.startsWith(`${namespacePrefix}cmp__`)) errors.push(`invalid component namespace: ${component.componentId}`);
+        if (!component.deviceId.startsWith(`${namespacePrefix}dev__`)) errors.push(`invalid device namespace: ${component.deviceId}`);
         const geometry = component.geometry || {};
         ["x", "y", "width", "height", "orientation"].forEach((field) => {
           if (!Number.isFinite(geometry[field])) errors.push(`missing geometry.${field}: ${component.componentId}`);
         });
       });
       circuitData.wires.forEach((wire) => {
+        if (!wire.wireId.startsWith(`${namespacePrefix}wire__`)) errors.push(`invalid wire namespace: ${wire.wireId}`);
         if (!ports.has(wire.fromPort)) errors.push(`missing fromPort: ${wire.fromPort}`);
         if (!ports.has(wire.toPort)) errors.push(`missing toPort: ${wire.toPort}`);
-        if (!Array.isArray(wire.routePoints) || wire.routePoints.length < 2) errors.push(`invalid routePoints: ${wire.wireId}`);
+        if (!Array.isArray(wire.routePoints) || wire.routePoints.length < 2) {
+          errors.push(`invalid routePoints: ${wire.wireId}`);
+          return;
+        }
+        const from = portMap.get(wire.fromPort);
+        const to = portMap.get(wire.toPort);
+        const first = wire.routePoints[0];
+        const last = wire.routePoints[wire.routePoints.length - 1];
+        if (from && (first.x !== from.x || first.y !== from.y)) errors.push(`route start mismatch: ${wire.wireId}`);
+        if (to && (last.x !== to.x || last.y !== to.y)) errors.push(`route end mismatch: ${wire.wireId}`);
       });
       circuitData.deviceEdges.forEach((edge) => {
+        if (!edge.edgeId.startsWith(`${namespacePrefix}edge__`)) errors.push(`invalid edge namespace: ${edge.edgeId}`);
+        if (!edge.deviceId.startsWith(`${namespacePrefix}dev__`)) errors.push(`invalid edge device namespace: ${edge.deviceId}`);
         if (!ports.has(edge.fromPort)) errors.push(`missing edge fromPort: ${edge.fromPort}`);
         if (!ports.has(edge.toPort)) errors.push(`missing edge toPort: ${edge.toPort}`);
+        if (!edge.circuitDomain || !edge.electricalRole) errors.push(`missing edge classification: ${edge.edgeId}`);
       });
-      return { valid: errors.length === 0, errors, counts: { ports: circuitData.ports.length, wires: circuitData.wires.length, components: circuitData.components.length, deviceEdges: circuitData.deviceEdges.length, danglingWires: errors.filter((error)=>error.includes("Port")).length } };
+      return { valid: errors.length === 0, errors, counts: { ports: circuitData.ports.length, wires: circuitData.wires.length, components: circuitData.components.length, deviceEdges: circuitData.deviceEdges.length, danglingWires: errors.filter((error)=>/Port|route (start|end)/.test(error)).length } };
     }
 
     function runTests() {
@@ -468,14 +634,20 @@
       test("QF open prevents energization", !evaluate(open, false).motorStates.M.running);
       if (mode === "jog") {
         const ready = { qf: "closed", jog: "pressed", fr: "normal" };
-        test("pressed jog starts motor", evaluate(ready, false).motorStates.M.running);
+        const energized = evaluate(ready, false);
+        test("pressed jog starts motor", energized.motorStates.M.running);
+        test("jog solver converges from topology", energized.converged && energized.iterationCount > 0);
+        test("jog current flow uses connected routes", energized.activeMainWireIds.length === 15 && energized.activeControlWireIds.length === 6);
         test("released jog stops motor", !evaluate({ ...ready, jog: "released" }, true).motorStates.M.running);
         test("overload blocks jog", !evaluate({ ...ready, fr: "overload" }, false).motorStates.M.running);
       } else {
         const press = { qf: "closed", start: "pressed", stop: "released", fr: "normal" };
         const energized = evaluate(press, false).stableDeviceStates.KM;
         test("start press energizes KM1", energized);
-        test("self-hold survives release", evaluate({ ...press, start: "released" }, energized).motorStates.M.running);
+        const held = evaluate({ ...press, start: "released" }, energized);
+        test("self-hold survives release", held.motorStates.M.running);
+        test("self-hold flow comes from auxiliary path", held.activeControlWireIds.includes(`${moduleId}__wire__c09`) && held.activeControlWireIds.includes(`${moduleId}__wire__c04`));
+        test("direct-start main flow uses all three connected phases", held.activeMainWireIds.length === 15);
         test("stop press drops KM1", !evaluate({ ...press, start: "released", stop: "pressed" }, true).stableDeviceStates.KM);
         test("overload drops KM1", !evaluate({ ...press, start: "released", fr: "overload" }, true).stableDeviceStates.KM);
         test("reset does not auto restart", !evaluate({ ...press, start: "released", fr: "normal" }, false).motorStates.M.running);
