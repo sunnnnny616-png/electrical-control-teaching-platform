@@ -8,7 +8,7 @@
     circuitData: platform.chapterCircuitData.ch01Jog,
     mode: "jog",
     copy: {
-      title: "点动控制实验",
+      title: "点动控制演示",
       initialTitle: "点动控制原理",
       initialText: "按住 SB 时 KM 线圈得电，主触点闭合，电动机运行；松开 SB 后线圈立即失电，电动机停止。",
       powerTitle: "QF 动作反馈",
