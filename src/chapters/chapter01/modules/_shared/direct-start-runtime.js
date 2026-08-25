@@ -13,7 +13,7 @@
   const pathData = (points) => points.map((point, index) => `${index ? "L" : "M"}${point.x} ${point.y}`).join(" ");
   const targetCanvasLayoutAttribute = () => typeof global.matchMedia === "function"
     && global.matchMedia("(min-width: 1181px) and (max-height: 980px)").matches
-    ? ' style="height:93.84%;margin:auto"'
+    ? ' style="height:93.84%;margin:auto;transform:scale(.9384);transform-origin:center"'
     : "";
 
   function appendGraphItem(adjacency, fromPort, toPort, item) {
