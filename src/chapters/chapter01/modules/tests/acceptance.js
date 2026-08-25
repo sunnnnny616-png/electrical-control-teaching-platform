@@ -9,7 +9,8 @@ const captureDirectory = process.env.ECTP_CAPTURE_DIR || "";
 const circuitCss = fs.readFileSync(path.join(repositoryRoot, "src/chapters/chapter01/modules/chapter01-circuits.css"), "utf8");
 const standaloneCircuitCss = circuitCss
   .replaceAll('[data-module^="ch01_"] ', "")
-  .replaceAll('[data-module="ch01_jog"] ', "");
+  .replaceAll('[data-module="ch01_jog"] ', "")
+  .replaceAll('[data-module="ch01_direct_start_protection"] ', "");
 const sources = [
   "src/schemas/module-contract.js",
   "src/platform/runtime/runtime-scope.js",
@@ -99,6 +100,7 @@ definitions.forEach((definition) => {
   }
   const renderSmoke = {
     initialSvg: initialMarkup.includes("ch01-circuit-svg"),
+    unifiedTargetCircuit: initialMarkup.includes("ch01-target-circuit"),
     activeCurrentFlow: activeMarkup.includes("ch01-wire-flow"),
     namespacedRoot: activeMarkup.includes(`data-module="${definition.meta.moduleId}"`),
     noCanvasStateCard: !activeMarkup.includes("ch01-state-badge"),
