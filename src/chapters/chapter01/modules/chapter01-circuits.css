@@ -50,6 +50,113 @@
 [data-module^="ch01_"] .ch01-clickable:hover .ch01-contact,
 [data-module^="ch01_"] .ch01-clickable:hover rect { filter: drop-shadow(0 0 5px rgba(40, 116, 255, .35)); }
 
+[data-module="ch01_jog"] .ch01-target-jog {
+  max-width: 100%;
+  overflow: visible;
+}
+[data-module="ch01_jog"] .ch01-target-jog .ch01-zone-title { font-size: 17px; fill: #172033; }
+[data-module="ch01_jog"] .ch01-target-jog .ch01-wire-base { stroke-width: 3.2; }
+[data-module="ch01_jog"] .ch01-target-jog .ch01-wire-control { stroke: #aeb8c7; }
+[data-module="ch01_jog"] .ch01-target-jog .ch01-wire-flow { stroke-width: 4.5; }
+[data-module="ch01_jog"] .ch01-target-jog .ch01-phase-label {
+  font-size: 16px;
+  font-weight: 800;
+  text-anchor: middle;
+}
+[data-module="ch01_jog"] .ch01-target-jog .ch01-terminal-core { fill: #f59e0b; stroke: none; }
+[data-module="ch01_jog"] .ch01-target-jog .ch01-contact-fixed { fill: #f59e0b; stroke: #536176; stroke-width: 1.4; }
+[data-module="ch01_jog"] .ch01-target-jog .ch01-device-channel rect,
+[data-module="ch01_jog"] .ch01-target-jog .ch01-fr-channel rect,
+[data-module="ch01_jog"] .ch01-target-jog .ch01-target-fuse rect {
+  fill: #f8fbff;
+  stroke: #91a3ba;
+  stroke-width: 2.5;
+}
+[data-module="ch01_jog"] .ch01-target-jog .ch01-device-channel .ch01-contact {
+  stroke: #ff4d4f;
+  stroke-width: 4;
+}
+[data-module="ch01_jog"] .ch01-target-jog .ch01-device-channel .ch01-contact.is-closed { stroke: #15945a; }
+[data-module="ch01_jog"] .ch01-target-jog .ch01-target-fuse line,
+[data-module="ch01_jog"] .ch01-target-jog .ch01-target-fuse path {
+  fill: none;
+  stroke: #e8902f;
+  stroke-width: 3;
+}
+[data-module="ch01_jog"] .ch01-target-jog .ch01-fr-channel path {
+  fill: none;
+  stroke: #26364b;
+  stroke-width: 3;
+}
+[data-module="ch01_jog"] .ch01-target-jog .ch01-fr-channel.is-overload rect { fill: #fff1f0; stroke: #e44242; }
+[data-module="ch01_jog"] .ch01-target-jog .ch01-push-cap {
+  fill: #7ee1bd;
+  stroke: #4aa982;
+  stroke-width: 2;
+}
+[data-module="ch01_jog"] .ch01-target-jog .ch01-push-stem,
+[data-module="ch01_jog"] .ch01-target-jog .ch01-target-coil > line,
+[data-module="ch01_jog"] .ch01-target-jog .ch01-target-motor > path {
+  fill: none;
+  stroke: #66768b;
+  stroke-width: 2.5;
+}
+[data-module="ch01_jog"] .ch01-target-jog .ch01-target-coil rect {
+  fill: #edf2f7;
+  stroke: #91a3ba;
+  stroke-width: 3;
+}
+[data-module="ch01_jog"] .ch01-target-jog .ch01-target-coil > path {
+  fill: none;
+  stroke: #c96613;
+  stroke-width: 4;
+}
+[data-module="ch01_jog"] .ch01-target-jog .ch01-target-coil.is-active rect { fill: #dcfce7; stroke: #15945a; }
+[data-module="ch01_jog"] .ch01-target-jog .ch01-target-fr-nc > rect {
+  fill: #f8fbff;
+  fill-opacity: .88;
+  stroke: #91a3ba;
+  stroke-width: 2.5;
+}
+[data-module="ch01_jog"] .ch01-target-jog .ch01-target-motor > circle {
+  fill: #eef4fa;
+  stroke: #536985;
+  stroke-width: 3;
+}
+[data-module="ch01_jog"] .ch01-target-jog .ch01-target-motor > rect {
+  fill: #f8fbff;
+  stroke: #536985;
+  stroke-width: 2.5;
+}
+[data-module="ch01_jog"] .ch01-target-jog .ch01-motor-fins line,
+[data-module="ch01_jog"] .ch01-target-jog .ch01-rotor line,
+[data-module="ch01_jog"] .ch01-target-jog .ch01-rotor circle {
+  stroke: #6c809a;
+  stroke-width: 2.5;
+  fill: none;
+}
+[data-module="ch01_jog"] .ch01-target-jog .ch01-rotor {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+[data-module="ch01_jog"] .ch01-target-jog .ch01-target-motor.is-running .ch01-rotor {
+  animation: ch01-motor-spin 1.2s linear infinite;
+}
+[data-module="ch01_jog"] .ch01-target-jog .ch01-target-motor.is-fault > circle { fill: #fff0f0; stroke: #d83c3c; }
+
+@media (min-width: 1181px) and (max-width: 1480px) {
+  body:has(#chapterModuleCanvas [data-module^="ch01_"]) .workspace {
+    grid-template-columns: 250px minmax(0, 1fr) 350px;
+  }
+  body:has(#chapterModuleCanvas [data-module^="ch01_"]) .inspector {
+    position: sticky;
+    grid-column: auto;
+    display: flex;
+    grid-template-columns: none;
+    max-height: calc(100vh - 100px);
+  }
+}
+
 @keyframes ch01-current-flow { to { stroke-dashoffset: -19; } }
 @keyframes ch01-motor-spin { to { transform: rotate(360deg); } }
 
