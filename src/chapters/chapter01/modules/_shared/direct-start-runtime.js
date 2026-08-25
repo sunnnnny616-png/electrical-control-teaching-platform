@@ -449,9 +449,12 @@
         const domainClass = wire.circuitDomain === "main" ? "ch01-wire-main" : "ch01-wire-control";
         const localWireId = wire.wireId.split("__wire__")[1] || "";
         const phaseIndex = wire.circuitDomain === "main" ? ((Number(localWireId.slice(1)) - 1) % 3) + 1 : 0;
-        const phaseClass = phaseIndex ? `ch01-phase-l${phaseIndex}` : "";
-        const overlay = active.has(wire.wireId) ? `<path class="ch01-wire-flow ${domainClass} ${phaseClass}" d="${d}" />` : partial.has(wire.wireId) ? `<path class="ch01-wire-partial" d="${d}" />` : "";
-        return `<g data-wire-id="${wire.wireId}"><path class="ch01-wire-base ${domainClass} ${phaseClass}" d="${d}" />${overlay}</g>`;
+        const basePhaseClass = phaseIndex ? `ch01-phase-l${phaseIndex}` : "";
+        const matureFlowClass = wire.circuitDomain === "main"
+          ? `current-flow-path main phase-l${phaseIndex}`
+          : "current-flow-path control";
+        const overlay = active.has(wire.wireId) ? `<path class="${matureFlowClass}" d="${d}" />` : partial.has(wire.wireId) ? `<path class="ch01-wire-partial" d="${d}" />` : "";
+        return `<g data-wire-id="${wire.wireId}"><path class="ch01-wire-base ${domainClass} ${basePhaseClass}" d="${d}" />${overlay}</g>`;
       }).join("");
     }
 
@@ -508,7 +511,10 @@
 
     function targetCoil(bbox, x1, x2, y, energized) {
       const innerHeight = bbox.height - 28;
-      return `<g class="ch01-target-coil ${energized ? "is-active" : ""}" data-sim-piece="ch01_coil"><rect x="${bbox.x}" y="${bbox.y}" width="${bbox.width}" height="${bbox.height}" rx="12" class="sim-coil-body"/>${energized ? `<rect x="${bbox.x + 8}" y="${bbox.y + 8}" width="${bbox.width - 16}" height="${bbox.height - 16}" rx="10" class="sim-coil-highlight"/>` : ""}${targetTerminal(x1,y)}${targetTerminal(x2,y)}<line x1="${x1}" y1="${y}" x2="${bbox.x + 10}" y2="${y}" class="sim-detail ki1"/><line x1="${bbox.x + bbox.width - 10}" y1="${y}" x2="${x2}" y2="${y}" class="sim-detail ki1"/><rect x="${bbox.x + 26}" y="${bbox.y + 16}" width="${bbox.width - 52}" height="${bbox.height - 32}" rx="8" class="sim-coil-core"/><path d="M${bbox.x + 18} ${y} q8 ${-innerHeight / 2} 16 0 q8 ${innerHeight / 2} 16 0 q8 ${-innerHeight / 2} 16 0 q8 ${innerHeight / 2} 16 0 q8 ${-innerHeight / 2} 16 0" class="sim-coil-winding"/></g>`;
+      const windingStep = Math.min(16, (bbox.width - 36) / 5);
+      const windingControl = windingStep / 2;
+      const windingPath = [0, 1, 2, 3, 4].map((index) => `q${windingControl} ${index % 2 ? innerHeight / 2 : -innerHeight / 2} ${windingStep} 0`).join(" ");
+      return `<g data-sim-piece="ch01_coil"><rect x="${bbox.x}" y="${bbox.y}" width="${bbox.width}" height="${bbox.height}" rx="12" ry="12" class="sim-coil-body"/>${energized ? `<rect x="${bbox.x + 8}" y="${bbox.y + 8}" width="${bbox.width - 16}" height="${bbox.height - 16}" rx="10" ry="10" class="sim-coil-highlight"/>` : ""}${targetTerminal(x1,y)}${targetTerminal(x2,y)}<line x1="${x1}" y1="${y}" x2="${bbox.x + 10}" y2="${y}" class="sim-detail ki1"/><line x1="${bbox.x + bbox.width - 10}" y1="${y}" x2="${x2}" y2="${y}" class="sim-detail ki1"/><rect x="${bbox.x + 26}" y="${bbox.y + 16}" width="${bbox.width - 52}" height="${bbox.height - 32}" rx="8" ry="8" class="sim-coil-core"/><path d="M${bbox.x + 18} ${y} ${windingPath}" class="sim-coil-winding"/></g>`;
     }
 
     function targetFrMain(bbox, xs, top, bottom, overload) {
