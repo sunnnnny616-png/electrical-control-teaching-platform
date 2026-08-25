@@ -122,6 +122,7 @@ definitions.forEach((definition) => {
     matureLaptopPixelScale: circuitCss.includes('transform: scale(.9384);')
       && circuitCss.includes('transform-origin: center;'),
     matureLaptopInlineScale: initialMarkup.includes('transform:scale(.9384);transform-origin:center'),
+    stableMotorRotorAnchor: /<g transform="translate\(\d+ \d+\)"><g class="sim-motor-rotor forward">/.test(activeMarkup),
     playbackVisibleAtLaptopHeight: circuitCss.includes('height: calc(100vh - 240px);')
       && circuitCss.includes('min-height: 128px;'),
     activeCurrentFlow: activeMarkup.includes("ch01-wire-flow"),
