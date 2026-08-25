@@ -10,6 +10,8 @@
 
 端口、导线、器件和器件边全部定义在 `circuit-data.js`。修改线路时只调整该文件中的 `ports`、`wires`、`components` 或 `deviceEdges`；基础导线与 Current Flow 均读取同一份 `routePoints`，不得另建动画路径。
 
+Solver 按成熟模块流程从 `ports -> wires -> deviceEdges` 建图并迭代 KM 状态；电动机运行由 L1/L2/L3 到 U/V/W 的三相可达性共同决定，不以“KM 得电”直接替代主回路求解。
+
 运行验收：
 
 ```bash

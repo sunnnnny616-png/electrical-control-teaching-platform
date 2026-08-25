@@ -33,7 +33,7 @@
     port("fr_l1_in", 120, 350), port("fr_l1_out", 120, 405),
     port("fr_l2_in", 210, 350), port("fr_l2_out", 210, 405),
     port("fr_l3_in", 300, 350), port("fr_l3_out", 300, 405),
-    port("m_u", 120, 470), port("m_v", 210, 470), port("m_w", 300, 470),
+    port("m_u", 180, 470), port("m_v", 210, 470), port("m_w", 240, 470),
     port("ctrl_l", 500, 180), port("fu2_l_in", 540, 180), port("fu2_l_out", 590, 180),
     port("sb_in", 650, 180), port("sb_out", 730, 180),
     port("coil_a1", 790, 180), port("coil_a2", 870, 180),
@@ -54,9 +54,9 @@
     wire("m10", "main", "km_l1_out", "fr_l1_in", [{x:120,y:315},{x:120,y:350}], "main"),
     wire("m11", "main", "km_l2_out", "fr_l2_in", [{x:210,y:315},{x:210,y:350}], "main"),
     wire("m12", "main", "km_l3_out", "fr_l3_in", [{x:300,y:315},{x:300,y:350}], "main"),
-    wire("m13", "main", "fr_l1_out", "m_u", [{x:120,y:405},{x:120,y:470}], "main"),
+    wire("m13", "main", "fr_l1_out", "m_u", [{x:120,y:405},{x:120,y:445},{x:180,y:445},{x:180,y:470}], "main"),
     wire("m14", "main", "fr_l2_out", "m_v", [{x:210,y:405},{x:210,y:470}], "main"),
-    wire("m15", "main", "fr_l3_out", "m_w", [{x:300,y:405},{x:300,y:470}], "main"),
+    wire("m15", "main", "fr_l3_out", "m_w", [{x:300,y:405},{x:300,y:445},{x:240,y:445},{x:240,y:470}], "main"),
     wire("c01", "control", "ctrl_l", "fu2_l_in", [{x:500,y:180},{x:540,y:180}], "control_supply"),
     wire("c02", "control", "fu2_l_out", "sb_in", [{x:590,y:180},{x:650,y:180}], "control"),
     wire("c03", "control", "sb_out", "coil_a1", [{x:730,y:180},{x:790,y:180}], "control"),
@@ -79,9 +79,13 @@
 
   const deviceEdges = Object.freeze([
     ...[1,2,3].map((phase) => edge(`qf_${phase}`, "qf", `qf_l${phase}_in`, `qf_l${phase}_out`, "QF", "main", "contact")),
+    ...[1,2,3].map((phase) => edge(`fu1_${phase}`, "fu1", `fu_l${phase}_in`, `fu_l${phase}_out`, "STATIC", "main", "protection")),
     ...[1,2,3].map((phase) => edge(`km_main_${phase}`, "km", `km_l${phase}_in`, `km_l${phase}_out`, "NO", "main", "contact")),
+    ...[1,2,3].map((phase) => edge(`fr_main_${phase}`, "fr", `fr_l${phase}_in`, `fr_l${phase}_out`, "STATIC", "main", "protection")),
+    edge("fu2_left", "fu2", "fu2_l_in", "fu2_l_out", "STATIC", "control", "protection"),
     edge("sb_no", "sb", "sb_in", "sb_out", "NO", "control", "contact"),
     edge("fr_nc", "fr", "fr_nc_in", "fr_nc_out", "NC", "control", "protection"),
+    edge("fu2_right", "fu2", "fu2_r_in", "fu2_r_out", "STATIC", "control", "protection"),
     edge("km_coil", "km", "coil_a1", "coil_a2", "COIL", "control", "coil")
   ]);
 
