@@ -101,6 +101,7 @@ definitions.forEach((definition) => {
   const renderSmoke = {
     initialSvg: initialMarkup.includes("ch01-circuit-svg"),
     unifiedTargetCircuit: initialMarkup.includes("ch01-target-circuit"),
+    matureCanvasScale: initialMarkup.includes('viewBox="-400 -210 2200 1700"'),
     activeCurrentFlow: activeMarkup.includes("ch01-wire-flow"),
     namespacedRoot: activeMarkup.includes(`data-module="${definition.meta.moduleId}"`),
     noCanvasStateCard: !activeMarkup.includes("ch01-state-badge"),
