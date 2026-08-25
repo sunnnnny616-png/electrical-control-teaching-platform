@@ -111,6 +111,11 @@
 
 /* Keep the complete playback strip visible on common laptop-height viewports. */
 @media (min-width: 1181px) and (max-height: 980px) {
+  body:has(#chapterModuleCanvas [data-module^="ch01_"]) #chapterModuleCanvas .ch01-circuit-svg {
+    height: 93.84%;
+    margin: auto;
+  }
+
   body:has(#chapterModuleCanvas [data-module^="ch01_"]) .stage-card {
     height: calc(100vh - 240px);
     min-height: 580px;
