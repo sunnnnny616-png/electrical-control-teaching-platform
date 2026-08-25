@@ -25,7 +25,7 @@
     port("fu1_l1_in",120,170),port("fu1_l1_out",120,215),port("fu1_l2_in",210,170),port("fu1_l2_out",210,215),port("fu1_l3_in",300,170),port("fu1_l3_out",300,215),
     port("km1_l1_in",120,260),port("km1_l1_out",120,315),port("km1_l2_in",210,260),port("km1_l2_out",210,315),port("km1_l3_in",300,260),port("km1_l3_out",300,315),
     port("fr1_l1_in",120,350),port("fr1_l1_out",120,405),port("fr1_l2_in",210,350),port("fr1_l2_out",210,405),port("fr1_l3_in",300,350),port("fr1_l3_out",300,405),
-    port("m_u",120,470),port("m_v",210,470),port("m_w",300,470),
+    port("m_u",180,470),port("m_v",210,470),port("m_w",240,470),
     port("ctrl_l",500,150),port("fu2_in",540,150),port("fu2_out",590,150),
     port("sb1_in",650,150),port("sb1_out",740,150),port("hold_in",650,225),port("hold_out",740,225),port("merge",780,150),
     port("sb2_in",830,150),port("sb2_out",910,150),port("coil_a1",960,150),port("coil_a2",1040,150),
@@ -37,7 +37,7 @@
     wire("m04","main","qf1_l1_out","fu1_l1_in",[{x:120,y:145},{x:120,y:170}],"main"),wire("m05","main","qf1_l2_out","fu1_l2_in",[{x:210,y:145},{x:210,y:170}],"main"),wire("m06","main","qf1_l3_out","fu1_l3_in",[{x:300,y:145},{x:300,y:170}],"main"),
     wire("m07","main","fu1_l1_out","km1_l1_in",[{x:120,y:215},{x:120,y:260}],"main"),wire("m08","main","fu1_l2_out","km1_l2_in",[{x:210,y:215},{x:210,y:260}],"main"),wire("m09","main","fu1_l3_out","km1_l3_in",[{x:300,y:215},{x:300,y:260}],"main"),
     wire("m10","main","km1_l1_out","fr1_l1_in",[{x:120,y:315},{x:120,y:350}],"main"),wire("m11","main","km1_l2_out","fr1_l2_in",[{x:210,y:315},{x:210,y:350}],"main"),wire("m12","main","km1_l3_out","fr1_l3_in",[{x:300,y:315},{x:300,y:350}],"main"),
-    wire("m13","main","fr1_l1_out","m_u",[{x:120,y:405},{x:120,y:470}],"main"),wire("m14","main","fr1_l2_out","m_v",[{x:210,y:405},{x:210,y:470}],"main"),wire("m15","main","fr1_l3_out","m_w",[{x:300,y:405},{x:300,y:470}],"main"),
+    wire("m13","main","fr1_l1_out","m_u",[{x:120,y:405},{x:120,y:445},{x:180,y:445},{x:180,y:470}],"main"),wire("m14","main","fr1_l2_out","m_v",[{x:210,y:405},{x:210,y:470}],"main"),wire("m15","main","fr1_l3_out","m_w",[{x:300,y:405},{x:300,y:445},{x:240,y:445},{x:240,y:470}],"main"),
     wire("c01","control","ctrl_l","fu2_in",[{x:500,y:150},{x:540,y:150}],"control_supply"),wire("c02","control","fu2_out","sb1_in",[{x:590,y:150},{x:650,y:150}],"control"),
     wire("c03","control","sb1_out","merge",[{x:740,y:150},{x:780,y:150}],"control"),wire("c04","control","hold_out","merge",[{x:740,y:225},{x:780,y:225},{x:780,y:150}],"control"),
     wire("c05","control","merge","sb2_in",[{x:780,y:150},{x:830,y:150}],"control"),wire("c06","control","sb2_out","coil_a1",[{x:910,y:150},{x:960,y:150}],"control"),
@@ -60,7 +60,10 @@
   ]);
   const deviceEdges = Object.freeze([
     ...[1,2,3].map((p)=>edge(`qf1_${p}`,"qf1",`qf1_l${p}_in`,`qf1_l${p}_out`,"QF","main","contact")),
+    ...[1,2,3].map((p)=>edge(`fu1_${p}`,"fu1",`fu1_l${p}_in`,`fu1_l${p}_out`,"STATIC","main","protection")),
     ...[1,2,3].map((p)=>edge(`km1_main_${p}`,"km1",`km1_l${p}_in`,`km1_l${p}_out`,"NO","main","contact")),
+    ...[1,2,3].map((p)=>edge(`fr1_main_${p}`,"fr1",`fr1_l${p}_in`,`fr1_l${p}_out`,"STATIC","main","protection")),
+    edge("fu2","fu2","fu2_in","fu2_out","STATIC","control","protection"),
     edge("sb1_no","sb1","sb1_in","sb1_out","NO","control","contact"),
     edge("km1_aux_no","km1","hold_in","hold_out","NO","control","contact"),
     edge("sb2_nc","sb2","sb2_in","sb2_out","NC","control","contact"),
