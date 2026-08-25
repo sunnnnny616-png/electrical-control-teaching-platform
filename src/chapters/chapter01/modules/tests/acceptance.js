@@ -7,10 +7,12 @@ const vm = require("vm");
 const repositoryRoot = path.resolve(__dirname, "../../../../..");
 const captureDirectory = process.env.ECTP_CAPTURE_DIR || "";
 const circuitCss = fs.readFileSync(path.join(repositoryRoot, "src/chapters/chapter01/modules/chapter01-circuits.css"), "utf8");
-const standaloneCircuitCss = circuitCss
+const indexHtml = fs.readFileSync(path.join(repositoryRoot, "index.html"), "utf8");
+const matureShellCss = [...indexHtml.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)].map((match) => match[1]).join("\n");
+const standaloneCircuitCss = `${matureShellCss}\n${circuitCss
   .replaceAll('[data-module^="ch01_"] ', "")
   .replaceAll('[data-module="ch01_jog"] ', "")
-  .replaceAll('[data-module="ch01_direct_start_protection"] ', "");
+  .replaceAll('[data-module="ch01_direct_start_protection"] ', "")}`;
 const sources = [
   "src/schemas/module-contract.js",
   "src/platform/runtime/runtime-scope.js",
@@ -101,7 +103,7 @@ definitions.forEach((definition) => {
   const renderSmoke = {
     initialSvg: initialMarkup.includes("ch01-circuit-svg"),
     unifiedTargetCircuit: initialMarkup.includes("ch01-target-circuit"),
-    matureCanvasScale: initialMarkup.includes('viewBox="-100 100 1500 1000"'),
+    matureCanvasScale: initialMarkup.includes('viewBox="0 0 1498 1135"'),
     matureComponentVisuals: [
       "sim-terminal-outer",
       "sim-fuse-shell",
@@ -110,6 +112,11 @@ definitions.forEach((definition) => {
       "sim-fr-channel",
       "sim-motor-shell"
     ].every((className) => initialMarkup.includes(className)),
+    matureGeometryExact: definition.meta.moduleId === "ch01_jog"
+      ? initialMarkup.includes('x="910" y="542" width="122" height="125"')
+        && initialMarkup.includes('x="1111" y="354" width="126" height="54"')
+      : initialMarkup.includes('x="1048" y="258" width="80" height="78"')
+        && initialMarkup.includes('x="1210" y="270" width="64" height="54"'),
     flexibleCanvasHeight: circuitCss.includes('.ch01-circuit-svg {\n  width: 100%;\n  height: 100%;\n  min-height: 0;'),
     playbackVisibleAtLaptopHeight: circuitCss.includes('height: calc(100vh - 240px);')
       && circuitCss.includes('min-height: 128px;'),
