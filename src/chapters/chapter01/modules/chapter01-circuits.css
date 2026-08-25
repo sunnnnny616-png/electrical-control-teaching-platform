@@ -114,6 +114,8 @@
   body:has(#chapterModuleCanvas [data-module^="ch01_"]) #chapterModuleCanvas .ch01-circuit-svg {
     height: 93.84%;
     margin: auto;
+    transform: scale(.9384);
+    transform-origin: center;
   }
 
   body:has(#chapterModuleCanvas [data-module^="ch01_"]) .stage-card {
