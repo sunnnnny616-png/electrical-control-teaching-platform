@@ -3,8 +3,8 @@
 
   const platform = global.ECTPPlatform = global.ECTPPlatform || {};
   platform.chapterRuntimes = platform.chapterRuntimes || {};
-  // 与第二章成熟模块保持相同的“宽画布 + 单屏完整展示”视觉比例。
-  const TARGET_CIRCUIT_VIEWBOX = "-100 100 1500 1000";
+  // 直接采用第二章成熟点动/长动模块的正式教学视窗。
+  const TARGET_CIRCUIT_VIEWBOX = "0 0 1498 1135";
 
   const clone = (value) => value === undefined ? undefined : JSON.parse(JSON.stringify(value));
   const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (character) => ({
@@ -455,55 +455,69 @@
       return `<g><circle cx="${x}" cy="${y}" r="4" class="ch01-terminal"/><circle cx="${x}" cy="${y + height}" r="4" class="ch01-terminal"/><line x1="${x}" y1="${y + 5}" x2="${closed ? x : x + 20}" y2="${y + height - 5}" class="ch01-contact ${closed ? "is-closed" : ""}"/><text x="${x - 18}" y="${y + (height / 2) + 6}" class="ch01-device-label">${label}</text></g>`;
     }
 
+    function targetTerminal(x, y, size = 4.4) {
+      return `<g class="sim-terminal"><circle cx="${x}" cy="${y}" r="${size}" class="sim-terminal-outer"/><circle cx="${x}" cy="${y}" r="${Math.max(1.8,size - 2.1)}" class="sim-terminal-inner"/><line x1="${x - 2.2}" y1="${y}" x2="${x + 2.2}" y2="${y}" class="sim-terminal-slot"/></g>`;
+    }
+
+    function targetLabel(x, y, text, anchor = "middle") {
+      return `<text x="${x}" y="${y}" text-anchor="${anchor}" class="sim-piece-label">${text}</text>`;
+    }
+
     function horizontalContact(x1, x2, y, closed, label, terminalLeft, terminalRight, labelY = y - 27, numberY = y + 24) {
-      const leftEnd = x1 + 14;
-      const rightEnd = x2 - 14;
-      const pivot = rightEnd - 12;
-      return `<g><rect class="sim-contact-frame" x="${x1 - 12}" y="${y - 17}" width="${x2 - x1 + 24}" height="34" rx="12"/>${targetTerminal(x1,y)}${targetTerminal(x2,y)}<line x1="${x1}" y1="${y}" x2="${leftEnd}" y2="${y}" class="sim-detail"/><line x1="${rightEnd}" y1="${y}" x2="${x2}" y2="${y}" class="sim-detail"/><circle cx="${leftEnd}" cy="${y}" r="4" class="sim-contact-fixed"/><circle cx="${rightEnd}" cy="${y}" r="4" class="sim-contact-fixed"/><line x1="${pivot}" y1="${y}" x2="${closed ? leftEnd + 4 : leftEnd + 16}" y2="${closed ? y : y - 10}" class="${closed ? "sim-contact-bridge-live sim-contact-bridge-active" : "sim-contact-bridge-open"}"/><path d="M${pivot - 10} ${y + 8} q3 -4 6 0 q3 4 6 0" class="sim-contact-spring"/><text x="${(x1 + x2) / 2}" y="${labelY}" class="ch01-device-label ch01-label-centered">${label}</text><text x="${x1}" y="${numberY}" class="ch01-terminal-number">${terminalLeft}</text><text x="${x2}" y="${numberY}" class="ch01-terminal-number">${terminalRight}</text></g>`;
+      const body = targetInlineContact({ x: x1, y: y - 14, width: x2 - x1, height: 28 }, x1, x2, y, closed);
+      return `${body}${targetLabel((x1 + x2) / 2,labelY,label)}<text x="${x1}" y="${numberY}" class="ch01-terminal-number">${terminalLeft}</text><text x="${x2}" y="${numberY}" class="ch01-terminal-number">${terminalRight}</text>`;
     }
 
-    function targetTerminal(x, y) {
-      return `<g class="sim-terminal"><circle cx="${x}" cy="${y}" r="4.4" class="sim-terminal-outer"/><circle cx="${x}" cy="${y}" r="2.3" class="sim-terminal-inner"/><line x1="${x - 2.2}" y1="${y}" x2="${x + 2.2}" y2="${y}" class="sim-terminal-slot"/></g>`;
+    function targetThreePoleQf(bbox, poles, closed) {
+      const topY = bbox.y + 18;
+      const bottomY = bbox.y + bbox.height - 18;
+      const midY = (topY + bottomY) / 2;
+      return `<g class="ch01-qf-piece" data-sim-piece="ch01_qf">${poles.map(({ x, top, bottom }) => `${targetTerminal(x,top)}${targetTerminal(x,bottom)}<line x1="${x}" y1="${top}" x2="${x}" y2="${topY}" class="sim-detail"/><line x1="${x}" y1="${bottom}" x2="${x}" y2="${bottomY}" class="sim-detail"/><circle cx="${x}" cy="${topY + 2}" r="4" class="sim-contact-fixed"/><circle cx="${x}" cy="${bottomY - 2}" r="4" class="sim-contact-fixed"/><line x1="${x}" y1="${bottomY - 6}" x2="${closed ? x : x + 12}" y2="${closed ? topY + 6 : midY - 10}" class="${closed ? "sim-contact-bridge-live sim-contact-bridge-active" : "sim-contact-bridge-open"}"/>`).join("")}</g>`;
     }
 
-    function targetVerticalDevice(x, top, bottom, closed, kind = "contact") {
-      const bladeEndX = closed ? x : x + 19;
-      const bladeEndY = closed ? top + 17 : top + 37;
-      return `<g class="ch01-device-channel ${kind}"><rect x="${x - 18}" y="${top - 8}" width="36" height="${bottom - top + 16}" rx="11" class="sim-contact-frame"/><circle cx="${x}" cy="${top + 14}" r="4" class="sim-contact-fixed"/><circle cx="${x}" cy="${bottom - 14}" r="4" class="sim-contact-fixed"/><line x1="${x}" y1="${bottom - 20}" x2="${bladeEndX}" y2="${bladeEndY}" class="${closed ? "sim-contact-bridge-live sim-contact-bridge-active" : "sim-contact-bridge-open"}"/>${targetTerminal(x, top)}${targetTerminal(x, bottom)}</g>`;
+    function targetMainContact(bbox, x, top, bottom, closed) {
+      const topY = bbox.y + 14;
+      const bottomY = bbox.y + bbox.height - 14;
+      const midY = (topY + bottomY) / 2;
+      return `<g class="ch01-device-channel" data-sim-piece="ch01_main_contact"><rect x="${x - 18}" y="${bbox.y}" width="36" height="${bbox.height}" rx="12" class="sim-contact-frame ki1"/><rect x="${x - 6}" y="${bbox.y + 10}" width="12" height="${bbox.height - 20}" rx="7" class="sim-ghost"/>${targetTerminal(x,top,4.6)}${targetTerminal(x,bottom,4.6)}<line x1="${x}" y1="${top}" x2="${x}" y2="${topY}" class="sim-detail ki1"/><line x1="${x}" y1="${bottom}" x2="${x}" y2="${bottomY}" class="sim-detail ki1"/><circle cx="${x}" cy="${topY + 2}" r="4.2" class="sim-contact-fixed"/><circle cx="${x}" cy="${bottomY - 2}" r="4.2" class="sim-contact-fixed"/><path d="M${x - 8} ${midY + 12} q3 -4 6 0 q3 4 6 0" class="sim-contact-spring"/><line x1="${x}" y1="${bottomY - 6}" x2="${closed ? x : x + 10}" y2="${closed ? topY + 6 : midY - 10}" class="${closed ? "sim-contact-bridge-live sim-contact-bridge-active" : "sim-contact-bridge-open"}"/><line x1="${x}" y1="${bottomY - 6}" x2="${x}" y2="${bottomY + 4}" class="sim-contact-arm"/></g>`;
     }
 
-    function targetFuse(x1, x2, y, label = "") {
-      const center = (x1 + x2) / 2;
-      return `<g class="ch01-target-fuse"><rect x="${x1 - 8}" y="${y - 11}" width="${x2 - x1 + 16}" height="22" rx="10" class="sim-fuse-shell"/><rect x="${center - 23}" y="${y - 7}" width="46" height="14" rx="7" class="sim-fuse-window"/><line x1="${x1}" y1="${y}" x2="${center - 23}" y2="${y}" class="sim-fuse-strap"/><line x1="${center + 23}" y1="${y}" x2="${x2}" y2="${y}" class="sim-fuse-strap"/><path d="M${center - 16} ${y} L${center - 7} ${y - 4} L${center + 2} ${y + 4} L${center + 10} ${y - 4} L${center + 17} ${y}" class="sim-fuse-core"/>${targetTerminal(x1, y)}${targetTerminal(x2, y)}${label ? `<text x="${center}" y="${y - 22}" class="ch01-device-label ch01-label-centered">${label}</text>` : ""}</g>`;
+    function targetFusePiece(bbox, x1, y1, x2, y2) {
+      const centerX = (x1 + x2) / 2;
+      const centerY = (y1 + y2) / 2;
+      return `<g class="ch01-target-fuse" data-sim-piece="ch01_fuse"><rect x="${bbox.x - 8}" y="${bbox.y}" width="${bbox.width + 16}" height="${bbox.height}" rx="10" class="sim-fuse-shell"/>${targetTerminal(x1,y1,4.2)}${targetTerminal(x2,y2,4.2)}<line x1="${centerX}" y1="${y1}" x2="${centerX}" y2="${bbox.y + 11}" class="sim-fuse-strap"/><line x1="${centerX}" y1="${bbox.y + bbox.height - 10}" x2="${centerX}" y2="${y2}" class="sim-fuse-strap"/><rect x="${centerX - 7}" y="${centerY - 23}" width="14" height="46" rx="7" class="sim-fuse-window"/><line x1="${centerX}" y1="${centerY - 15}" x2="${centerX}" y2="${centerY + 15}" class="sim-fuse-core"/><path d="M${centerX - 4} ${centerY - 8} L${centerX + 2} ${centerY - 1} L${centerX - 2} ${centerY + 7} L${centerX + 4} ${centerY + 14}" class="sim-fuse-core"/></g>`;
     }
 
-    function targetVerticalFuse(x, top, bottom) {
-      const center = (top + bottom) / 2;
-      return `<g class="ch01-target-fuse vertical"><rect x="${x - 12}" y="${top - 6}" width="24" height="${bottom - top + 12}" rx="10" class="sim-fuse-shell"/><rect x="${x - 7}" y="${center - 18}" width="14" height="36" rx="7" class="sim-fuse-window"/><line x1="${x}" y1="${top}" x2="${x}" y2="${center - 18}" class="sim-fuse-strap"/><line x1="${x}" y1="${center + 18}" x2="${x}" y2="${bottom}" class="sim-fuse-strap"/><path d="M${x - 4} ${center - 12} L${x + 2} ${center - 5} L${x - 2} ${center + 3} L${x + 4} ${center + 11}" class="sim-fuse-core"/>${targetTerminal(x, top)}${targetTerminal(x, bottom)}</g>`;
-    }
-
-    function targetPushButton(x1, x2, y, pressed, closed, label, accent, terminalLeft, terminalRight, labelY) {
+    function targetPushButton(bbox, x1, x2, y, pressed, closed, accent) {
       const center = (x1 + x2) / 2;
       const offset = pressed ? 4 : 0;
       const capClass = accent === "stop" ? "sim-button-cap-stop" : "sim-button-cap-forward";
-      return `<g><rect x="${x1 - 4}" y="${y - 11}" width="${x2 - x1 + 8}" height="22" rx="8" class="sim-button-contactblock"/>${targetTerminal(x1,y)}${targetTerminal(x2,y)}<line x1="${x1}" y1="${y}" x2="${x1 + 15}" y2="${y}" class="sim-detail"/><line x1="${x2 - 15}" y1="${y}" x2="${x2}" y2="${y}" class="sim-detail"/><line x1="${x1 + 15}" y1="${y}" x2="${closed ? x2 - 15 : x2 - 18}" y2="${closed ? y : y - 8}" class="${closed ? "sim-contact-bridge-live sim-contact-bridge-active" : "sim-contact-bridge-open"}"/><line x1="${center}" y1="${y - 8 + offset}" x2="${center}" y2="${y - 24}" class="sim-button-stem"/><rect x="${center - 22}" y="${y - 52}" width="44" height="18" rx="9" class="sim-button-backplate"/><circle cx="${center}" cy="${y - 36 + offset}" r="16" class="${capClass}"/><circle cx="${center}" cy="${y - 36 + offset}" r="21" class="sim-button-ring"/><text x="${center}" y="${labelY}" class="ch01-device-label ch01-label-centered">${label}</text><text x="${x1}" y="${y + 27}" class="ch01-terminal-number">${terminalLeft}</text><text x="${x2}" y="${y + 27}" class="ch01-terminal-number">${terminalRight}</text></g>`;
+      return `<g data-sim-piece="ch01_button"><rect x="${bbox.x - 4}" y="${y - 11}" width="${bbox.width + 8}" height="22" rx="8" class="sim-button-contactblock"/>${targetTerminal(x1,y)}${targetTerminal(x2,y)}<line x1="${x1}" y1="${y}" x2="${x1 + 15}" y2="${y}" class="sim-detail"/><line x1="${x2 - 15}" y1="${y}" x2="${x2}" y2="${y}" class="sim-detail"/><line x1="${x1 + 15}" y1="${y}" x2="${closed ? x2 - 15 : x2 - 18}" y2="${closed ? y : y - 8}" class="${closed ? "sim-contact-bridge-live sim-contact-bridge-active" : "sim-contact-bridge-open"}"/><line x1="${center}" y1="${y - 8 + offset}" x2="${center}" y2="${y - 24}" class="sim-button-stem"/><rect x="${center - 22}" y="${y - 52}" width="44" height="18" rx="9" class="sim-button-backplate"/><circle cx="${center}" cy="${y - 36 + offset}" r="16" class="${capClass}"/><circle cx="${center}" cy="${y - 36 + offset}" r="21" class="sim-button-ring"/></g>`;
     }
 
-    function targetCoil(x1, x2, y, energized, label, labelY) {
-      const width = Math.min(100, x2 - x1 - 20);
-      const boxX = ((x1 + x2) / 2) - (width / 2);
-      const boxY = y - 50;
-      const height = 100;
-      const step = (width - 36) / 5;
-      const halfStep = step / 2;
-      return `<g class="ch01-target-coil ${energized ? "is-active" : ""}"><rect x="${boxX}" y="${boxY}" width="${width}" height="${height}" rx="12" class="sim-coil-body"/>${energized ? `<rect x="${boxX + 8}" y="${boxY + 8}" width="${width - 16}" height="${height - 16}" rx="10" class="sim-coil-highlight"/>` : ""}${targetTerminal(x1,y)}${targetTerminal(x2,y)}<line x1="${x1}" y1="${y}" x2="${boxX + 10}" y2="${y}" class="sim-detail"/><line x1="${boxX + width - 10}" y1="${y}" x2="${x2}" y2="${y}" class="sim-detail"/><rect x="${boxX + 26}" y="${boxY + 16}" width="${Math.max(18,width - 52)}" height="${height - 32}" rx="8" class="sim-coil-core"/><path d="M${boxX + 18} ${y} q${halfStep} -36 ${step} 0 q${halfStep} 36 ${step} 0 q${halfStep} -36 ${step} 0 q${halfStep} 36 ${step} 0 q${halfStep} -36 ${step} 0" class="sim-coil-winding"/><text x="${(x1 + x2) / 2}" y="${labelY}" class="ch01-device-label ch01-label-centered">${label}</text></g>`;
+    function targetInlineContact(bbox, x1, x2, y, closed) {
+      const leftEnd = x1 + 14;
+      const rightEnd = x2 - 14;
+      const pivot = rightEnd - 12;
+      return `<g data-sim-piece="ch01_inline_contact"><rect x="${bbox.x}" y="${bbox.y - 6}" width="${bbox.width}" height="${bbox.height + 12}" rx="12" class="sim-contact-frame ki1"/>${targetTerminal(x1,y)}${targetTerminal(x2,y)}<line x1="${x1}" y1="${y}" x2="${leftEnd}" y2="${y}" class="sim-detail ki1"/><line x1="${rightEnd}" y1="${y}" x2="${x2}" y2="${y}" class="sim-detail ki1"/><circle cx="${leftEnd}" cy="${y}" r="4" class="sim-contact-fixed"/><circle cx="${rightEnd}" cy="${y}" r="4" class="sim-contact-fixed"/><line x1="${pivot}" y1="${y}" x2="${closed ? leftEnd + 4 : leftEnd + 16}" y2="${closed ? y : y - 10}" class="${closed ? "sim-contact-bridge-live sim-contact-bridge-active" : "sim-contact-bridge-open"}"/><path d="M${pivot - 10} ${y + 8} q3 -4 6 0 q3 4 6 0" class="sim-contact-spring"/></g>`;
     }
 
-    function targetMotor(running, overload) {
-      const cx = 296;
-      const bodyY = 916;
-      const fins = [-22,-11,0,11,22].map((dx)=>`<line x1="${cx + dx}" y1="${bodyY - 28}" x2="${cx + dx}" y2="${bodyY + 28}" class="sim-motor-fin"/>`).join("");
-      return `<g class="ch01-target-motor ${running ? "is-running" : ""} ${overload ? "is-fault" : ""}"><rect x="${cx - 26}" y="858" width="52" height="18" rx="6" class="sim-motor-box"/>${targetTerminal(218,852)}${targetTerminal(296,852)}${targetTerminal(370,852)}<path d="M218 852 L278 867 M296 852 L296 867 M370 852 L314 867" class="sim-detail"/><circle cx="${cx}" cy="${bodyY}" r="42" class="sim-motor-shell"/><circle cx="${cx - 30}" cy="${bodyY}" r="12" class="sim-motor-endcap"/><circle cx="${cx + 30}" cy="${bodyY}" r="12" class="sim-motor-endcap"/>${fins}<g class="sim-motor-rotor ${running ? "forward" : ""}"><circle cx="${cx}" cy="${bodyY}" r="12" class="sim-motor-endcap"/><line x1="${cx - 18}" y1="${bodyY}" x2="${cx + 18}" y2="${bodyY}" class="sim-contact-arm"/><line x1="${cx}" y1="${bodyY - 18}" x2="${cx}" y2="${bodyY + 18}" class="sim-contact-arm"/></g><rect x="${cx - 44}" y="${bodyY + 40}" width="88" height="14" rx="6" class="sim-metal"/><text x="${cx}" y="1000" class="ch01-device-label ch01-label-centered">M</text></g>`;
+    function targetCoil(bbox, x1, x2, y, energized) {
+      const innerHeight = bbox.height - 28;
+      return `<g class="ch01-target-coil ${energized ? "is-active" : ""}" data-sim-piece="ch01_coil"><rect x="${bbox.x}" y="${bbox.y}" width="${bbox.width}" height="${bbox.height}" rx="12" class="sim-coil-body"/>${energized ? `<rect x="${bbox.x + 8}" y="${bbox.y + 8}" width="${bbox.width - 16}" height="${bbox.height - 16}" rx="10" class="sim-coil-highlight"/>` : ""}${targetTerminal(x1,y)}${targetTerminal(x2,y)}<line x1="${x1}" y1="${y}" x2="${bbox.x + 10}" y2="${y}" class="sim-detail ki1"/><line x1="${bbox.x + bbox.width - 10}" y1="${y}" x2="${x2}" y2="${y}" class="sim-detail ki1"/><rect x="${bbox.x + 26}" y="${bbox.y + 16}" width="${bbox.width - 52}" height="${bbox.height - 32}" rx="8" class="sim-coil-core"/><path d="M${bbox.x + 18} ${y} q8 ${-innerHeight / 2} 16 0 q8 ${innerHeight / 2} 16 0 q8 ${-innerHeight / 2} 16 0 q8 ${innerHeight / 2} 16 0 q8 ${-innerHeight / 2} 16 0" class="sim-coil-winding"/></g>`;
+    }
+
+    function targetFrMain(bbox, xs, top, bottom, overload) {
+      return `<g data-sim-piece="ch01_fr_main">${xs.map((x)=>`${targetTerminal(x,top)}${targetTerminal(x,bottom)}<rect x="${x - 12}" y="${bbox.y + 9}" width="24" height="${bbox.height - 18}" rx="7" class="sim-fr-channel${overload ? " emphasized" : ""}"/><path d="M${x - 6} ${bbox.y + 14} l12 6 l-12 6 l12 6 l-12 6" class="sim-fr-heater${overload ? " emphasized" : ""}"/>`).join("")}</g>`;
+    }
+
+    function targetMotor(bbox, ports, running, overload) {
+      const cx = ports[1].x;
+      const bodyY = bbox.y + 38;
+      const cy = bodyY + 34;
+      const targets = [{x:cx-18,y:bbox.y+24},{x:cx,y:bbox.y+26},{x:cx+18,y:bbox.y+24}];
+      const fins = [-22,-11,0,11,22].map((dx)=>`<line x1="${cx + dx}" y1="${bodyY + 4}" x2="${cx + dx}" y2="${bodyY + 70}" class="sim-motor-fin"/>`).join("");
+      return `<g class="ch01-target-motor ${running ? "is-running" : ""} ${overload ? "is-fault" : ""}" data-sim-piece="ch01_motor"><rect x="${cx - 26}" y="${bbox.y + 6}" width="52" height="18" rx="6" class="sim-motor-box"/><circle cx="${cx}" cy="${cy}" r="42" class="sim-motor-shell"/><circle cx="${cx - 30}" cy="${cy}" r="12" class="sim-motor-endcap"/><circle cx="${cx + 30}" cy="${cy}" r="12" class="sim-motor-endcap"/><rect x="${cx + 37}" y="${bodyY + 29}" width="18" height="10" rx="4" class="sim-motor-shaft"/><rect x="${cx - 44}" y="${bodyY + 68}" width="88" height="14" rx="6" class="sim-metal"/><g transform="translate(${cx} ${cy})" class="sim-motor-rotor ${running ? "forward" : ""}"><circle cx="0" cy="0" r="12" class="sim-motor-endcap"/><line x1="-18" y1="0" x2="18" y2="0" class="sim-contact-arm"/><line x1="0" y1="-18" x2="0" y2="18" class="sim-contact-arm"/></g>${fins}${ports.map((port,index)=>`${targetTerminal(port.x,port.y)}<line x1="${port.x}" y1="${port.y}" x2="${targets[index].x}" y2="${targets[index].y}" class="sim-detail"/><circle cx="${targets[index].x}" cy="${targets[index].y}" r="2.4" class="sim-contact-fixed"/>`).join("")}</g>`;
     }
 
     function renderTargetJogSvg(display) {
@@ -511,26 +525,26 @@
       const km = display.kmEnergized;
       const overload = display.operation.fr === "overload";
       const jogPressed = display.operation.jog === "pressed";
-      const phases = [[218,"A"],[296,"B"],[370,"C"]];
-      const supplies = phases.map(([x,label]) => `<g>${targetTerminal(x,255)}<text x="${x}" y="232" class="ch01-phase-label">${label}</text></g>`).join("");
-      const qf = phases.map(([x]) => targetVerticalDevice(x,289,381,powerClosed,"qf")).join("");
-      const fu1 = phases.map(([x]) => targetVerticalFuse(x,425,462)).join("");
-      const mainContacts = phases.map(([x]) => targetVerticalDevice(x,569,661,km,"km")).join("");
-      const frChannels = phases.map(([x]) => `<g class="ch01-fr-channel ${overload ? "is-overload" : ""}"><rect x="${x - 12}" y="709" width="24" height="58" rx="7" class="sim-fr-channel ${overload ? "emphasized" : ""}"/><path d="M${x - 6} 719 l12 7 l-12 7 l12 7 l-12 7 l12 7" class="sim-fr-heater ${overload ? "emphasized" : ""}"/>${targetTerminal(x,717)}${targetTerminal(x,761)}</g>`).join("");
+      const xs = [218,296,370];
+      const supplies = xs.map((x) => targetTerminal(x,255)).join("");
+      const qf = targetThreePoleQf({x:183,y:276,width:224,height:116},xs.map((x)=>({x,top:289,bottom:381})),powerClosed);
+      const fu1 = xs.map((x) => targetFusePiece({x:x-12,y:419,width:24,height:48},x,425,x,462)).join("");
+      const mainContacts = xs.map((x) => targetMainContact({x:x-11,y:562,width:22,height:106},x,569,661,km)).join("");
+      const frChannels = targetFrMain({x:162,y:709,width:264,height:58},xs,717,761,overload);
       return `<svg class="ch01-circuit-svg ch01-target-circuit ch01-target-jog" data-module="${moduleId}" viewBox="${TARGET_CIRCUIT_VIEWBOX}" role="img" aria-label="${escapeHtml(copy.title)}电路图">
         <g class="ch01-wires">${wireMarkup(display)}</g>
-        <g class="ch01-target-labels"><text x="290" y="1060" class="ch01-zone-title main">主电路</text><text x="820" y="282" class="ch01-zone-title control">控制电路</text></g>
+        <g class="ch01-target-labels">${targetLabel(295,254,"QF")}${targetLabel(294,391,"FU1")}${targetLabel(461.5,399,"FU2")}${targetLabel(296,544,"KM")}${targetLabel(294,691,"FR")}${targetLabel(294,979,"M")}${targetLabel(621.5,568,"SB 点动按钮")}${targetLabel(971,530,"KM 线圈")}${targetLabel(1174,350,"FR 常闭保护触点")}${targetLabel(271,1100,"主电路")}${targetLabel(832,240,"控制电路")}${targetLabel(218,232,"A")}${targetLabel(296,232,"B")}${targetLabel(370,232,"C")}</g>
         <g class="ch01-supplies">${supplies}</g>
-        <g data-action="${powerClosed ? "POWER_OPEN" : "POWER_CLOSE"}" class="ch01-clickable ch01-qf">${qf}<text x="190" y="340" class="ch01-device-label ch01-label-side">QF</text></g>
-        <g class="ch01-fuse">${fu1}<text x="190" y="449" class="ch01-device-label ch01-label-side">FU1</text></g>
-        <g class="ch01-km-main ${km ? "is-active" : ""}">${mainContacts}<text x="190" y="620" class="ch01-device-label ch01-label-side">KM</text></g>
-        <g data-action="PROTECTION_TOGGLE" class="ch01-clickable ch01-target-fr">${frChannels}<text x="190" y="745" class="ch01-device-label ch01-label-side">FR</text></g>
-        ${targetMotor(display.motorRunning, overload)}
+        <g data-action="${powerClosed ? "POWER_OPEN" : "POWER_CLOSE"}" class="ch01-clickable ch01-qf">${qf}</g>
+        <g class="ch01-target-main-fuses">${fu1}</g>
+        <g class="ch01-km-main ${km ? "is-active" : ""}">${mainContacts}</g>
+        <g data-action="PROTECTION_TOGGLE" class="ch01-clickable ch01-target-fr">${frChannels}</g>
+        ${targetMotor({x:141,y:811,width:306,height:265},xs.map((x)=>({x,y:852})),display.motorRunning,overload)}
         <g class="ch01-control-components">
-          ${targetFuse(416,507,426,"FU2")}${targetFuse(416,507,462)}
-          <g data-action="JOG_PRESS" data-release-action="JOG_RELEASE" class="ch01-clickable ch01-target-sb">${targetPushButton(571,672,606,jogPressed,jogPressed,"SB 点动按钮","forward","13","14",535)}</g>
-          ${targetCoil(767,1025,606,km,"KM 线圈",522)}
-          <g data-action="PROTECTION_TOGGLE" class="ch01-clickable ch01-target-fr-nc">${horizontalContact(1121,1198,381,!overload,"FR 常闭保护触点","95","96",326,426)}</g>
+          ${targetFusePiece({x:416,y:417,width:91,height:18},416,426,507,426)}${targetFusePiece({x:416,y:453,width:91,height:18},416,462,507,462)}
+          <g data-action="JOG_PRESS" data-release-action="JOG_RELEASE" class="ch01-clickable ch01-target-sb">${targetPushButton({x:571,y:592,width:101,height:28},571,672,606,jogPressed,jogPressed,"forward")}</g>
+          ${targetCoil({x:910,y:542,width:122,height:125},767,1025,606,km)}
+          <g data-action="PROTECTION_TOGGLE" class="ch01-clickable ch01-target-fr-nc">${targetInlineContact({x:1111,y:360,width:126,height:42},1121,1198,381,!overload)}</g>
         </g>
       </svg>`;
     }
@@ -541,29 +555,28 @@
       const overload = display.operation.fr === "overload";
       const startClosed = display.operation.start === "pressed";
       const stopClosed = display.operation.stop !== "pressed";
-      const phases = [[218,"L1"],[296,"L2"],[370,"L3"]];
-      const supplies = phases.map(([x,label]) => `<g>${targetTerminal(x,255)}<text x="${x}" y="232" class="ch01-phase-label">${label}</text></g>`).join("");
-      const qf = phases.map(([x]) => targetVerticalDevice(x,289,381,powerClosed,"qf")).join("");
-      const fu1 = phases.map(([x]) => targetVerticalFuse(x,425,462)).join("");
-      const mainContacts = phases.map(([x]) => targetVerticalDevice(x,569,661,km,"km")).join("");
-      const frChannels = phases.map(([x]) => `<g class="ch01-fr-channel ${overload ? "is-overload" : ""}"><rect x="${x - 12}" y="709" width="24" height="58" rx="7" class="sim-fr-channel ${overload ? "emphasized" : ""}"/><path d="M${x - 6} 719 l12 7 l-12 7 l12 7 l-12 7 l12 7" class="sim-fr-heater ${overload ? "emphasized" : ""}"/>${targetTerminal(x,717)}${targetTerminal(x,761)}</g>`).join("");
+      const xs = [150,212,274];
+      const supplies = xs.map((x) => targetTerminal(x,246)).join("");
+      const qf = targetThreePoleQf({x:112,y:266,width:200,height:114},xs.map((x)=>({x,top:280,bottom:368})),powerClosed);
+      const fu1 = xs.map((x) => targetFusePiece({x:x-12,y:396,width:24,height:62},x,404,x,452)).join("");
+      const mainContacts = xs.map((x) => targetMainContact({x:x-12,y:552,width:24,height:104},x,560,650,km)).join("");
+      const frChannels = targetFrMain({x:108,y:716,width:208,height:58},xs,726,768,overload);
       return `<svg class="ch01-circuit-svg ch01-target-circuit ch01-target-protection" data-module="${moduleId}" viewBox="${TARGET_CIRCUIT_VIEWBOX}" role="img" aria-label="${escapeHtml(copy.title)}电路图">
         <g class="ch01-wires">${wireMarkup(display)}</g>
-        <g class="ch01-target-labels"><text x="290" y="1060" class="ch01-zone-title main">主电路</text><text x="820" y="252" class="ch01-zone-title control">控制电路</text></g>
+        <g class="ch01-target-labels">${targetLabel(212,244,"QF1")}${targetLabel(212,368,"FU1")}${targetLabel(490,270,"FU2")}${targetLabel(212,534,"KM1")}${targetLabel(212,698,"FR1")}${targetLabel(212,1014,"M")}${targetLabel(648,259,"SB1 启动")}${targetLabel(876,259,"SB2 停止")}${targetLabel(734,416,"KM1 常开（自锁）")}${targetLabel(1088,246,"KM1 线圈")}${targetLabel(1242,264,"FR1 常闭保护")}${targetLabel(217,1136,"主电路")}${targetLabel(858,214,"控制电路")}${targetLabel(150,230,"A")}${targetLabel(212,230,"B")}${targetLabel(274,230,"C")}</g>
         <g class="ch01-supplies">${supplies}</g>
-        <g data-action="${powerClosed ? "POWER_OPEN" : "POWER_CLOSE"}" class="ch01-clickable ch01-qf">${qf}<text x="190" y="340" class="ch01-device-label ch01-label-side">QF1</text></g>
-        <g class="ch01-fuse">${fu1}<text x="190" y="449" class="ch01-device-label ch01-label-side">FU1</text></g>
-        <g class="ch01-km-main ${km ? "is-active" : ""}">${mainContacts}<text x="190" y="620" class="ch01-device-label ch01-label-side">KM1</text></g>
-        <g data-action="PROTECTION_TOGGLE" class="ch01-clickable ch01-target-fr">${frChannels}<text x="190" y="745" class="ch01-device-label ch01-label-side">FR1</text></g>
-        ${targetMotor(display.motorRunning, overload)}
+        <g data-action="${powerClosed ? "POWER_OPEN" : "POWER_CLOSE"}" class="ch01-clickable ch01-qf">${qf}</g>
+        <g class="ch01-target-main-fuses">${fu1}</g>
+        <g class="ch01-km-main ${km ? "is-active" : ""}">${mainContacts}</g>
+        <g data-action="PROTECTION_TOGGLE" class="ch01-clickable ch01-target-fr">${frChannels}</g>
+        ${targetMotor({x:92,y:844,width:240,height:220},xs.map((x)=>({x,y:892})),display.motorRunning,overload)}
         <g class="ch01-control-components">
-          <text x="430" y="329" class="ch01-supply-mark">L</text>${targetFuse(460,540,350,"FU2")}
-          <g data-action="START_PRIMARY_PRESS" class="ch01-clickable ch01-target-sb ch01-start-button">${targetPushButton(610,700,350,startClosed,startClosed,"SB1 启动","forward","13","14",280)}</g>
-          <g class="ch01-target-aux ${km ? "is-active" : ""}">${horizontalContact(610,700,500,km,"KM1 自锁","13","14",455,540)}</g>
-          <g data-action="STOP_PRIMARY_PRESS" class="ch01-clickable ch01-target-sb ch01-stop-button">${targetPushButton(820,900,350,!stopClosed,stopClosed,"SB2 停止","stop","11","12",280)}</g>
-          ${targetCoil(960,1060,350,km,"KM1 线圈",275)}<text x="960" y="390" class="ch01-terminal-number">A1</text><text x="1060" y="390" class="ch01-terminal-number">A2</text>
-          <g data-action="PROTECTION_TOGGLE" class="ch01-clickable ch01-target-fr-nc">${horizontalContact(1120,1190,350,!overload,"FR1 常闭保护","95","96",300,398)}</g>
-          <text x="1230" y="329" class="ch01-supply-mark">N</text>
+          ${targetFusePiece({x:454,y:288,width:72,height:18},454,297,526,297)}
+          <g data-action="START_PRIMARY_PRESS" class="ch01-clickable ch01-target-sb ch01-start-button">${targetPushButton({x:620,y:283,width:56,height:28},620,676,297,startClosed,startClosed,"forward")}</g>
+          <g class="ch01-target-aux ${km ? "is-active" : ""}">${targetInlineContact({x:620,y:432,width:228,height:28},620,848,446,km)}</g>
+          <g data-action="STOP_PRIMARY_PRESS" class="ch01-clickable ch01-target-sb ch01-stop-button">${targetPushButton({x:848,y:283,width:56,height:28},848,904,297,!stopClosed,stopClosed,"stop")}</g>
+          ${targetCoil({x:1048,y:258,width:80,height:78},1048,1128,297,km)}
+          <g data-action="PROTECTION_TOGGLE" class="ch01-clickable ch01-target-fr-nc">${targetInlineContact({x:1210,y:276,width:64,height:42},1216,1268,297,!overload)}</g>
         </g>
       </svg>`;
     }
