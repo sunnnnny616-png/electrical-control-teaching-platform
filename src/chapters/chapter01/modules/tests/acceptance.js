@@ -102,6 +102,9 @@ definitions.forEach((definition) => {
     initialSvg: initialMarkup.includes("ch01-circuit-svg"),
     unifiedTargetCircuit: initialMarkup.includes("ch01-target-circuit"),
     matureCanvasScale: initialMarkup.includes('viewBox="-400 -210 2200 1700"'),
+    flexibleCanvasHeight: circuitCss.includes('.ch01-circuit-svg {\n  width: 100%;\n  height: 100%;\n  min-height: 0;'),
+    playbackVisibleAtLaptopHeight: circuitCss.includes('height: calc(100vh - 240px);')
+      && circuitCss.includes('min-height: 128px;'),
     activeCurrentFlow: activeMarkup.includes("ch01-wire-flow"),
     namespacedRoot: activeMarkup.includes(`data-module="${definition.meta.moduleId}"`),
     noCanvasStateCard: !activeMarkup.includes("ch01-state-badge"),
