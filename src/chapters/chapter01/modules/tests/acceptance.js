@@ -51,6 +51,7 @@ const sandbox = {
   setInterval,
   clearInterval,
   AbortController,
+  matchMedia: () => ({ matches: true }),
   document: { getElementById: (id) => fakeElements.get(id) || null }
 };
 sandbox.globalThis = sandbox;
@@ -119,6 +120,7 @@ definitions.forEach((definition) => {
         && initialMarkup.includes('x="1210" y="270" width="64" height="54"'),
     flexibleCanvasHeight: circuitCss.includes('.ch01-circuit-svg {\n  width: 100%;\n  height: 100%;\n  min-height: 0;'),
     matureLaptopPixelScale: circuitCss.includes('#chapterModuleCanvas .ch01-circuit-svg {\n    height: 93.84%;\n    margin: auto;'),
+    matureLaptopInlineScale: initialMarkup.includes('style="height:93.84%;margin:auto"'),
     playbackVisibleAtLaptopHeight: circuitCss.includes('height: calc(100vh - 240px);')
       && circuitCss.includes('min-height: 128px;'),
     activeCurrentFlow: activeMarkup.includes("ch01-wire-flow"),
