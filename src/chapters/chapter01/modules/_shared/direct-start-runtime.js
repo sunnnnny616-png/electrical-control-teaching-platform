@@ -11,6 +11,10 @@
     "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
   })[character]);
   const pathData = (points) => points.map((point, index) => `${index ? "L" : "M"}${point.x} ${point.y}`).join(" ");
+  const targetCanvasLayoutAttribute = () => typeof global.matchMedia === "function"
+    && global.matchMedia("(min-width: 1181px) and (max-height: 980px)").matches
+    ? ' style="height:93.84%;margin:auto"'
+    : "";
 
   function appendGraphItem(adjacency, fromPort, toPort, item) {
     if (!adjacency.has(fromPort)) adjacency.set(fromPort, []);
@@ -531,7 +535,7 @@
       const fu1 = xs.map((x) => targetFusePiece({x:x-12,y:419,width:24,height:48},x,425,x,462)).join("");
       const mainContacts = xs.map((x) => targetMainContact({x:x-11,y:562,width:22,height:106},x,569,661,km)).join("");
       const frChannels = targetFrMain({x:162,y:709,width:264,height:58},xs,717,761,overload);
-      return `<svg class="ch01-circuit-svg ch01-target-circuit ch01-target-jog" data-module="${moduleId}" viewBox="${TARGET_CIRCUIT_VIEWBOX}" role="img" aria-label="${escapeHtml(copy.title)}电路图">
+      return `<svg class="ch01-circuit-svg ch01-target-circuit ch01-target-jog"${targetCanvasLayoutAttribute()} data-module="${moduleId}" viewBox="${TARGET_CIRCUIT_VIEWBOX}" role="img" aria-label="${escapeHtml(copy.title)}电路图">
         <g class="ch01-wires">${wireMarkup(display)}</g>
         <g class="ch01-target-labels">${targetLabel(295,254,"QF")}${targetLabel(294,391,"FU1")}${targetLabel(461.5,399,"FU2")}${targetLabel(296,544,"KM")}${targetLabel(294,691,"FR")}${targetLabel(294,979,"M")}${targetLabel(621.5,568,"SB 点动按钮")}${targetLabel(971,530,"KM 线圈")}${targetLabel(1174,350,"FR 常闭保护触点")}${targetLabel(271,1100,"主电路")}${targetLabel(832,240,"控制电路")}${targetLabel(218,232,"A")}${targetLabel(296,232,"B")}${targetLabel(370,232,"C")}</g>
         <g class="ch01-supplies">${supplies}</g>
@@ -561,7 +565,7 @@
       const fu1 = xs.map((x) => targetFusePiece({x:x-12,y:396,width:24,height:62},x,404,x,452)).join("");
       const mainContacts = xs.map((x) => targetMainContact({x:x-12,y:552,width:24,height:104},x,560,650,km)).join("");
       const frChannels = targetFrMain({x:108,y:716,width:208,height:58},xs,726,768,overload);
-      return `<svg class="ch01-circuit-svg ch01-target-circuit ch01-target-protection" data-module="${moduleId}" viewBox="${TARGET_CIRCUIT_VIEWBOX}" role="img" aria-label="${escapeHtml(copy.title)}电路图">
+      return `<svg class="ch01-circuit-svg ch01-target-circuit ch01-target-protection"${targetCanvasLayoutAttribute()} data-module="${moduleId}" viewBox="${TARGET_CIRCUIT_VIEWBOX}" role="img" aria-label="${escapeHtml(copy.title)}电路图">
         <g class="ch01-wires">${wireMarkup(display)}</g>
         <g class="ch01-target-labels">${targetLabel(212,244,"QF1")}${targetLabel(212,368,"FU1")}${targetLabel(490,270,"FU2")}${targetLabel(212,534,"KM1")}${targetLabel(212,698,"FR1")}${targetLabel(212,1014,"M")}${targetLabel(648,259,"SB1 启动")}${targetLabel(876,259,"SB2 停止")}${targetLabel(734,416,"KM1 常开（自锁）")}${targetLabel(1088,246,"KM1 线圈")}${targetLabel(1242,264,"FR1 常闭保护")}${targetLabel(217,1136,"主电路")}${targetLabel(858,214,"控制电路")}${targetLabel(150,230,"A")}${targetLabel(212,230,"B")}${targetLabel(274,230,"C")}</g>
         <g class="ch01-supplies">${supplies}</g>
