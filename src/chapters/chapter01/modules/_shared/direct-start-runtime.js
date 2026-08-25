@@ -453,10 +453,10 @@
       return `<g><circle cx="${x}" cy="${y}" r="4" class="ch01-terminal"/><circle cx="${x}" cy="${y + height}" r="4" class="ch01-terminal"/><line x1="${x}" y1="${y + 5}" x2="${closed ? x : x + 20}" y2="${y + height - 5}" class="ch01-contact ${closed ? "is-closed" : ""}"/><text x="${x - 18}" y="${y + (height / 2) + 6}" class="ch01-device-label">${label}</text></g>`;
     }
 
-    function horizontalContact(x1, x2, y, closed, label, terminalLeft, terminalRight) {
+    function horizontalContact(x1, x2, y, closed, label, terminalLeft, terminalRight, labelY = y - 27, numberY = y + 24) {
       const bladeEndX = closed ? x2 - 6 : x2 - 12;
       const bladeEndY = closed ? y : y - 20;
-      return `<g><rect class="ch01-hit-target" x="${x1 - 12}" y="${y - 34}" width="${x2 - x1 + 24}" height="68" rx="10"/><circle cx="${x1}" cy="${y}" r="4" class="ch01-terminal"/><circle cx="${x2}" cy="${y}" r="4" class="ch01-terminal"/><line x1="${x1 + 6}" y1="${y}" x2="${bladeEndX}" y2="${bladeEndY}" class="ch01-contact ${closed ? "is-closed" : ""}"/><text x="${(x1 + x2) / 2}" y="${y - 27}" class="ch01-device-label ch01-label-centered">${label}</text><text x="${x1}" y="${y + 24}" class="ch01-terminal-number">${terminalLeft}</text><text x="${x2}" y="${y + 24}" class="ch01-terminal-number">${terminalRight}</text></g>`;
+      return `<g><rect class="ch01-hit-target" x="${x1 - 12}" y="${y - 34}" width="${x2 - x1 + 24}" height="68" rx="10"/><circle cx="${x1}" cy="${y}" r="4" class="ch01-terminal"/><circle cx="${x2}" cy="${y}" r="4" class="ch01-terminal"/><line x1="${x1 + 6}" y1="${y}" x2="${bladeEndX}" y2="${bladeEndY}" class="ch01-contact ${closed ? "is-closed" : ""}"/><text x="${(x1 + x2) / 2}" y="${labelY}" class="ch01-device-label ch01-label-centered">${label}</text><text x="${x1}" y="${numberY}" class="ch01-terminal-number">${terminalLeft}</text><text x="${x2}" y="${numberY}" class="ch01-terminal-number">${terminalRight}</text></g>`;
     }
 
     function targetTerminal(x, y) {
@@ -481,30 +481,65 @@
       const phases = [[218,"A"],[296,"B"],[370,"C"]];
       const supplies = phases.map(([x,label]) => `<g>${targetTerminal(x,255)}<text x="${x}" y="232" class="ch01-phase-label">${label}</text></g>`).join("");
       const qf = phases.map(([x]) => targetVerticalDevice(x,289,381,powerClosed,"qf")).join("");
-      const fu1 = phases.map(([x],index) => `<g class="ch01-target-fuse vertical"><rect x="${x - 12}" y="419" width="24" height="48" rx="7"/><path d="M${x} 426 l-5 9 l10 9 l-10 9 l5 8"/>${targetTerminal(x,425)}${targetTerminal(x,462)}${index === 1 ? `<text x="${x}" y="405" class="ch01-device-label ch01-label-centered">FU1</text>` : ""}</g>`).join("");
+      const fu1 = phases.map(([x]) => `<g class="ch01-target-fuse vertical"><rect x="${x - 12}" y="419" width="24" height="48" rx="7"/><path d="M${x} 426 l-5 9 l10 9 l-10 9 l5 8"/>${targetTerminal(x,425)}${targetTerminal(x,462)}</g>`).join("");
       const mainContacts = phases.map(([x]) => targetVerticalDevice(x,569,661,km,"km")).join("");
       const frChannels = phases.map(([x]) => `<g class="ch01-fr-channel ${overload ? "is-overload" : ""}"><rect x="${x - 13}" y="709" width="26" height="58" rx="8"/><path d="M${x - 6} 719 l12 7 l-12 7 l12 7 l-12 7 l12 7"/>${targetTerminal(x,717)}${targetTerminal(x,761)}</g>`).join("");
       const motorFins = [-34,-22,-11,0,11,22,34].map((dx)=>`<line x1="${296 + dx}" y1="886" x2="${296 + dx}" y2="964"/>`).join("");
-      return `<svg class="ch01-circuit-svg ch01-target-jog" data-module="${moduleId}" viewBox="0 0 1400 1100" role="img" aria-label="${escapeHtml(copy.title)}电路图">
+      return `<svg class="ch01-circuit-svg ch01-target-circuit ch01-target-jog" data-module="${moduleId}" viewBox="0 0 1400 1100" role="img" aria-label="${escapeHtml(copy.title)}电路图">
         <g class="ch01-wires">${wireMarkup(display)}</g>
         <g class="ch01-target-labels"><text x="290" y="1060" class="ch01-zone-title main">主电路</text><text x="820" y="282" class="ch01-zone-title control">控制电路</text></g>
         <g class="ch01-supplies">${supplies}</g>
-        <g data-action="${powerClosed ? "POWER_OPEN" : "POWER_CLOSE"}" class="ch01-clickable ch01-qf">${qf}<text x="296" y="274" class="ch01-device-label ch01-label-centered">QF</text></g>
-        <g class="ch01-fuse">${fu1}</g>
-        <g class="ch01-km-main ${km ? "is-active" : ""}">${mainContacts}<text x="296" y="548" class="ch01-device-label ch01-label-centered">KM</text></g>
-        <g data-action="PROTECTION_TOGGLE" class="ch01-clickable ch01-target-fr">${frChannels}<text x="296" y="696" class="ch01-device-label ch01-label-centered">FR</text></g>
+        <g data-action="${powerClosed ? "POWER_OPEN" : "POWER_CLOSE"}" class="ch01-clickable ch01-qf">${qf}<text x="190" y="340" class="ch01-device-label ch01-label-side">QF</text></g>
+        <g class="ch01-fuse">${fu1}<text x="190" y="449" class="ch01-device-label ch01-label-side">FU1</text></g>
+        <g class="ch01-km-main ${km ? "is-active" : ""}">${mainContacts}<text x="190" y="620" class="ch01-device-label ch01-label-side">KM</text></g>
+        <g data-action="PROTECTION_TOGGLE" class="ch01-clickable ch01-target-fr">${frChannels}<text x="190" y="745" class="ch01-device-label ch01-label-side">FR</text></g>
         <g class="ch01-target-motor ${display.motorRunning ? "is-running" : ""} ${overload ? "is-fault" : ""}"><rect x="270" y="858" width="52" height="22" rx="6"/>${targetTerminal(218,852)}${targetTerminal(296,852)}${targetTerminal(370,852)}<path d="M218 852 L278 870 M296 852 L296 870 M370 852 L314 870"/><circle cx="296" cy="925" r="58"/><circle cx="250" cy="925" r="15"/><circle cx="342" cy="925" r="15"/><g class="ch01-motor-fins">${motorFins}</g><g class="ch01-rotor"><circle cx="296" cy="925" r="16"/><line x1="272" y1="925" x2="320" y2="925"/><line x1="296" y1="901" x2="296" y2="949"/></g><rect class="ch01-motor-base" x="238" y="984" width="116" height="18" rx="7"/><text x="296" y="1030" class="ch01-device-label ch01-label-centered">M</text></g>
         <g class="ch01-control-components">
           ${targetFuse(416,507,426,"FU2")}${targetFuse(416,507,462)}
-          <g data-action="JOG_PRESS" data-release-action="JOG_RELEASE" class="ch01-clickable ch01-target-sb">${horizontalContact(571,672,606,jogPressed,"SB 点动按钮","13","14")}<circle cx="622" cy="568" r="15" class="ch01-push-cap"/><line x1="622" y1="583" x2="622" y2="594" class="ch01-push-stem"/></g>
+          <g data-action="JOG_PRESS" data-release-action="JOG_RELEASE" class="ch01-clickable ch01-target-sb">${horizontalContact(571,672,606,jogPressed,"SB 点动按钮","13","14",535)}<circle cx="622" cy="568" r="15" class="ch01-push-cap"/><line x1="622" y1="583" x2="622" y2="594" class="ch01-push-stem"/></g>
           <g class="ch01-target-coil ${km ? "is-active" : ""}">${targetTerminal(767,606)}${targetTerminal(1025,606)}<line x1="767" y1="606" x2="910" y2="606"/><rect x="910" y="542" width="122" height="125" rx="14"/><path d="M925 620 C935 570 945 570 955 620 S975 670 985 620 S1005 570 1015 620"/><text x="971" y="522" class="ch01-device-label ch01-label-centered">KM 线圈</text></g>
-          <g data-action="PROTECTION_TOGGLE" class="ch01-clickable ch01-target-fr-nc">${horizontalContact(1121,1198,381,!overload,"FR 常闭保护触点","95","96")}<rect x="1109" y="356" width="101" height="50" rx="11"/></g>
+          <g data-action="PROTECTION_TOGGLE" class="ch01-clickable ch01-target-fr-nc"><rect x="1109" y="356" width="101" height="50" rx="11"/>${horizontalContact(1121,1198,381,!overload,"FR 常闭保护触点","95","96",326,426)}</g>
+        </g>
+      </svg>`;
+    }
+
+    function renderTargetProtectionSvg(display) {
+      const powerClosed = display.operation.qf === "closed";
+      const km = display.kmEnergized;
+      const overload = display.operation.fr === "overload";
+      const startClosed = display.operation.start === "pressed";
+      const stopClosed = display.operation.stop !== "pressed";
+      const phases = [[218,"L1"],[296,"L2"],[370,"L3"]];
+      const supplies = phases.map(([x,label]) => `<g>${targetTerminal(x,255)}<text x="${x}" y="232" class="ch01-phase-label">${label}</text></g>`).join("");
+      const qf = phases.map(([x]) => targetVerticalDevice(x,289,381,powerClosed,"qf")).join("");
+      const fu1 = phases.map(([x]) => `<g class="ch01-target-fuse vertical"><rect x="${x - 12}" y="419" width="24" height="48" rx="7"/><path d="M${x} 426 l-5 9 l10 9 l-10 9 l5 8"/>${targetTerminal(x,425)}${targetTerminal(x,462)}</g>`).join("");
+      const mainContacts = phases.map(([x]) => targetVerticalDevice(x,569,661,km,"km")).join("");
+      const frChannels = phases.map(([x]) => `<g class="ch01-fr-channel ${overload ? "is-overload" : ""}"><rect x="${x - 13}" y="709" width="26" height="58" rx="8"/><path d="M${x - 6} 719 l12 7 l-12 7 l12 7 l-12 7 l12 7"/>${targetTerminal(x,717)}${targetTerminal(x,761)}</g>`).join("");
+      const motorFins = [-34,-22,-11,0,11,22,34].map((dx)=>`<line x1="${296 + dx}" y1="886" x2="${296 + dx}" y2="964"/>`).join("");
+      return `<svg class="ch01-circuit-svg ch01-target-circuit ch01-target-protection" data-module="${moduleId}" viewBox="0 0 1400 1100" role="img" aria-label="${escapeHtml(copy.title)}电路图">
+        <g class="ch01-wires">${wireMarkup(display)}</g>
+        <g class="ch01-target-labels"><text x="290" y="1060" class="ch01-zone-title main">主电路</text><text x="870" y="252" class="ch01-zone-title control">控制电路</text></g>
+        <g class="ch01-supplies">${supplies}</g>
+        <g data-action="${powerClosed ? "POWER_OPEN" : "POWER_CLOSE"}" class="ch01-clickable ch01-qf">${qf}<text x="190" y="340" class="ch01-device-label ch01-label-side">QF1</text></g>
+        <g class="ch01-fuse">${fu1}<text x="190" y="449" class="ch01-device-label ch01-label-side">FU1</text></g>
+        <g class="ch01-km-main ${km ? "is-active" : ""}">${mainContacts}<text x="190" y="620" class="ch01-device-label ch01-label-side">KM1</text></g>
+        <g data-action="PROTECTION_TOGGLE" class="ch01-clickable ch01-target-fr">${frChannels}<text x="190" y="745" class="ch01-device-label ch01-label-side">FR1</text></g>
+        <g class="ch01-target-motor ${display.motorRunning ? "is-running" : ""} ${overload ? "is-fault" : ""}"><rect x="270" y="858" width="52" height="22" rx="6"/>${targetTerminal(218,852)}${targetTerminal(296,852)}${targetTerminal(370,852)}<path d="M218 852 L278 870 M296 852 L296 870 M370 852 L314 870"/><circle cx="296" cy="925" r="58"/><circle cx="250" cy="925" r="15"/><circle cx="342" cy="925" r="15"/><g class="ch01-motor-fins">${motorFins}</g><g class="ch01-rotor"><circle cx="296" cy="925" r="16"/><line x1="272" y1="925" x2="320" y2="925"/><line x1="296" y1="901" x2="296" y2="949"/></g><rect class="ch01-motor-base" x="238" y="984" width="116" height="18" rx="7"/><text x="296" y="1030" class="ch01-device-label ch01-label-centered">M</text></g>
+        <g class="ch01-control-components">
+          <text x="430" y="329" class="ch01-supply-mark">L</text>${targetFuse(460,550,350,"FU2")}
+          <g data-action="START_PRIMARY_PRESS" class="ch01-clickable ch01-target-sb ch01-start-button">${horizontalContact(650,750,350,startClosed,"SB1 启动","13","14",280,390)}<circle cx="700" cy="310" r="14" class="ch01-push-cap"/><line x1="700" y1="324" x2="700" y2="337" class="ch01-push-stem"/></g>
+          <g class="ch01-target-aux ${km ? "is-active" : ""}">${horizontalContact(650,750,500,km,"KM1 自锁","13","14",455,540)}</g>
+          <g data-action="STOP_PRIMARY_PRESS" class="ch01-clickable ch01-target-sb ch01-stop-button">${horizontalContact(870,960,350,stopClosed,"SB2 停止","11","12",280,390)}<circle cx="915" cy="310" r="14" class="ch01-stop-cap"/><line x1="915" y1="324" x2="915" y2="337" class="ch01-push-stem"/></g>
+          <g class="ch01-target-coil ${km ? "is-active" : ""}">${targetTerminal(1030,350)}${targetTerminal(1150,350)}<rect x="1040" y="300" width="100" height="100" rx="14"/><path d="M1053 363 C1062 323 1071 323 1080 363 S1098 403 1107 363 S1125 323 1134 363"/><text x="1090" y="275" class="ch01-device-label ch01-label-centered">KM1 线圈</text><text x="1030" y="390" class="ch01-terminal-number">A1</text><text x="1150" y="390" class="ch01-terminal-number">A2</text></g>
+          <g data-action="PROTECTION_TOGGLE" class="ch01-clickable ch01-target-fr-nc"><rect x="1208" y="325" width="104" height="50" rx="11"/>${horizontalContact(1220,1300,350,!overload,"FR1 常闭保护","95","96",300,398)}</g>
+          <text x="1340" y="329" class="ch01-supply-mark">N</text>
         </g>
       </svg>`;
     }
 
     function renderSvg(display) {
       if (mode === "jog") return renderTargetJogSvg(display);
+      if (mode === "self_hold") return renderTargetProtectionSvg(display);
       const powerClosed = display.operation.qf === "closed";
       const km = display.kmEnergized;
       const overload = display.operation.fr === "overload";
