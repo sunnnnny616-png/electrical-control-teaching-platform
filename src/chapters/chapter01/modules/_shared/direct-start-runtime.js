@@ -3,6 +3,7 @@
 
   const platform = global.ECTPPlatform = global.ECTPPlatform || {};
   platform.chapterRuntimes = platform.chapterRuntimes || {};
+  const TARGET_CIRCUIT_VIEWBOX = "-400 -210 2200 1700";
 
   const clone = (value) => value === undefined ? undefined : JSON.parse(JSON.stringify(value));
   const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (character) => ({
@@ -485,7 +486,7 @@
       const mainContacts = phases.map(([x]) => targetVerticalDevice(x,569,661,km,"km")).join("");
       const frChannels = phases.map(([x]) => `<g class="ch01-fr-channel ${overload ? "is-overload" : ""}"><rect x="${x - 13}" y="709" width="26" height="58" rx="8"/><path d="M${x - 6} 719 l12 7 l-12 7 l12 7 l-12 7 l12 7"/>${targetTerminal(x,717)}${targetTerminal(x,761)}</g>`).join("");
       const motorFins = [-34,-22,-11,0,11,22,34].map((dx)=>`<line x1="${296 + dx}" y1="886" x2="${296 + dx}" y2="964"/>`).join("");
-      return `<svg class="ch01-circuit-svg ch01-target-circuit ch01-target-jog" data-module="${moduleId}" viewBox="0 0 1400 1100" role="img" aria-label="${escapeHtml(copy.title)}电路图">
+      return `<svg class="ch01-circuit-svg ch01-target-circuit ch01-target-jog" data-module="${moduleId}" viewBox="${TARGET_CIRCUIT_VIEWBOX}" role="img" aria-label="${escapeHtml(copy.title)}电路图">
         <g class="ch01-wires">${wireMarkup(display)}</g>
         <g class="ch01-target-labels"><text x="290" y="1060" class="ch01-zone-title main">主电路</text><text x="820" y="282" class="ch01-zone-title control">控制电路</text></g>
         <g class="ch01-supplies">${supplies}</g>
@@ -516,7 +517,7 @@
       const mainContacts = phases.map(([x]) => targetVerticalDevice(x,569,661,km,"km")).join("");
       const frChannels = phases.map(([x]) => `<g class="ch01-fr-channel ${overload ? "is-overload" : ""}"><rect x="${x - 13}" y="709" width="26" height="58" rx="8"/><path d="M${x - 6} 719 l12 7 l-12 7 l12 7 l-12 7 l12 7"/>${targetTerminal(x,717)}${targetTerminal(x,761)}</g>`).join("");
       const motorFins = [-34,-22,-11,0,11,22,34].map((dx)=>`<line x1="${296 + dx}" y1="886" x2="${296 + dx}" y2="964"/>`).join("");
-      return `<svg class="ch01-circuit-svg ch01-target-circuit ch01-target-protection" data-module="${moduleId}" viewBox="0 0 1400 1100" role="img" aria-label="${escapeHtml(copy.title)}电路图">
+      return `<svg class="ch01-circuit-svg ch01-target-circuit ch01-target-protection" data-module="${moduleId}" viewBox="${TARGET_CIRCUIT_VIEWBOX}" role="img" aria-label="${escapeHtml(copy.title)}电路图">
         <g class="ch01-wires">${wireMarkup(display)}</g>
         <g class="ch01-target-labels"><text x="290" y="1060" class="ch01-zone-title main">主电路</text><text x="820" y="252" class="ch01-zone-title control">控制电路</text></g>
         <g class="ch01-supplies">${supplies}</g>
