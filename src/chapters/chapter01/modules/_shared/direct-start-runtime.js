@@ -518,7 +518,7 @@
       const motorFins = [-34,-22,-11,0,11,22,34].map((dx)=>`<line x1="${296 + dx}" y1="886" x2="${296 + dx}" y2="964"/>`).join("");
       return `<svg class="ch01-circuit-svg ch01-target-circuit ch01-target-protection" data-module="${moduleId}" viewBox="0 0 1400 1100" role="img" aria-label="${escapeHtml(copy.title)}电路图">
         <g class="ch01-wires">${wireMarkup(display)}</g>
-        <g class="ch01-target-labels"><text x="290" y="1060" class="ch01-zone-title main">主电路</text><text x="870" y="252" class="ch01-zone-title control">控制电路</text></g>
+        <g class="ch01-target-labels"><text x="290" y="1060" class="ch01-zone-title main">主电路</text><text x="820" y="252" class="ch01-zone-title control">控制电路</text></g>
         <g class="ch01-supplies">${supplies}</g>
         <g data-action="${powerClosed ? "POWER_OPEN" : "POWER_CLOSE"}" class="ch01-clickable ch01-qf">${qf}<text x="190" y="340" class="ch01-device-label ch01-label-side">QF1</text></g>
         <g class="ch01-fuse">${fu1}<text x="190" y="449" class="ch01-device-label ch01-label-side">FU1</text></g>
@@ -526,13 +526,13 @@
         <g data-action="PROTECTION_TOGGLE" class="ch01-clickable ch01-target-fr">${frChannels}<text x="190" y="745" class="ch01-device-label ch01-label-side">FR1</text></g>
         <g class="ch01-target-motor ${display.motorRunning ? "is-running" : ""} ${overload ? "is-fault" : ""}"><rect x="270" y="858" width="52" height="22" rx="6"/>${targetTerminal(218,852)}${targetTerminal(296,852)}${targetTerminal(370,852)}<path d="M218 852 L278 870 M296 852 L296 870 M370 852 L314 870"/><circle cx="296" cy="925" r="58"/><circle cx="250" cy="925" r="15"/><circle cx="342" cy="925" r="15"/><g class="ch01-motor-fins">${motorFins}</g><g class="ch01-rotor"><circle cx="296" cy="925" r="16"/><line x1="272" y1="925" x2="320" y2="925"/><line x1="296" y1="901" x2="296" y2="949"/></g><rect class="ch01-motor-base" x="238" y="984" width="116" height="18" rx="7"/><text x="296" y="1030" class="ch01-device-label ch01-label-centered">M</text></g>
         <g class="ch01-control-components">
-          <text x="430" y="329" class="ch01-supply-mark">L</text>${targetFuse(460,550,350,"FU2")}
-          <g data-action="START_PRIMARY_PRESS" class="ch01-clickable ch01-target-sb ch01-start-button">${horizontalContact(650,750,350,startClosed,"SB1 启动","13","14",280,390)}<circle cx="700" cy="310" r="14" class="ch01-push-cap"/><line x1="700" y1="324" x2="700" y2="337" class="ch01-push-stem"/></g>
-          <g class="ch01-target-aux ${km ? "is-active" : ""}">${horizontalContact(650,750,500,km,"KM1 自锁","13","14",455,540)}</g>
-          <g data-action="STOP_PRIMARY_PRESS" class="ch01-clickable ch01-target-sb ch01-stop-button">${horizontalContact(870,960,350,stopClosed,"SB2 停止","11","12",280,390)}<circle cx="915" cy="310" r="14" class="ch01-stop-cap"/><line x1="915" y1="324" x2="915" y2="337" class="ch01-push-stem"/></g>
-          <g class="ch01-target-coil ${km ? "is-active" : ""}">${targetTerminal(1030,350)}${targetTerminal(1150,350)}<rect x="1040" y="300" width="100" height="100" rx="14"/><path d="M1053 363 C1062 323 1071 323 1080 363 S1098 403 1107 363 S1125 323 1134 363"/><text x="1090" y="275" class="ch01-device-label ch01-label-centered">KM1 线圈</text><text x="1030" y="390" class="ch01-terminal-number">A1</text><text x="1150" y="390" class="ch01-terminal-number">A2</text></g>
-          <g data-action="PROTECTION_TOGGLE" class="ch01-clickable ch01-target-fr-nc"><rect x="1208" y="325" width="104" height="50" rx="11"/>${horizontalContact(1220,1300,350,!overload,"FR1 常闭保护","95","96",300,398)}</g>
-          <text x="1340" y="329" class="ch01-supply-mark">N</text>
+          <text x="430" y="329" class="ch01-supply-mark">L</text>${targetFuse(460,540,350,"FU2")}
+          <g data-action="START_PRIMARY_PRESS" class="ch01-clickable ch01-target-sb ch01-start-button">${horizontalContact(610,700,350,startClosed,"SB1 启动","13","14",280,390)}<circle cx="655" cy="310" r="14" class="ch01-push-cap"/><line x1="655" y1="324" x2="655" y2="337" class="ch01-push-stem"/></g>
+          <g class="ch01-target-aux ${km ? "is-active" : ""}">${horizontalContact(610,700,500,km,"KM1 自锁","13","14",455,540)}</g>
+          <g data-action="STOP_PRIMARY_PRESS" class="ch01-clickable ch01-target-sb ch01-stop-button">${horizontalContact(820,900,350,stopClosed,"SB2 停止","11","12",280,390)}<circle cx="860" cy="310" r="14" class="ch01-stop-cap"/><line x1="860" y1="324" x2="860" y2="337" class="ch01-push-stem"/></g>
+          <g class="ch01-target-coil ${km ? "is-active" : ""}">${targetTerminal(960,350)}${targetTerminal(1060,350)}<rect x="970" y="300" width="80" height="100" rx="14"/><path d="M981 363 C988 323 995 323 1002 363 S1016 403 1023 363 S1037 323 1044 363"/><text x="1010" y="275" class="ch01-device-label ch01-label-centered">KM1 线圈</text><text x="960" y="390" class="ch01-terminal-number">A1</text><text x="1060" y="390" class="ch01-terminal-number">A2</text></g>
+          <g data-action="PROTECTION_TOGGLE" class="ch01-clickable ch01-target-fr-nc"><rect x="1108" y="325" width="94" height="50" rx="11"/>${horizontalContact(1120,1190,350,!overload,"FR1 常闭保护","95","96",300,398)}</g>
+          <text x="1230" y="329" class="ch01-supply-mark">N</text>
         </g>
       </svg>`;
     }
