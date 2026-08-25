@@ -101,7 +101,15 @@ definitions.forEach((definition) => {
   const renderSmoke = {
     initialSvg: initialMarkup.includes("ch01-circuit-svg"),
     unifiedTargetCircuit: initialMarkup.includes("ch01-target-circuit"),
-    matureCanvasScale: initialMarkup.includes('viewBox="-400 -210 2200 1700"'),
+    matureCanvasScale: initialMarkup.includes('viewBox="-100 100 1500 1000"'),
+    matureComponentVisuals: [
+      "sim-terminal-outer",
+      "sim-fuse-shell",
+      "sim-contact-frame",
+      "sim-coil-body",
+      "sim-fr-channel",
+      "sim-motor-shell"
+    ].every((className) => initialMarkup.includes(className)),
     flexibleCanvasHeight: circuitCss.includes('.ch01-circuit-svg {\n  width: 100%;\n  height: 100%;\n  min-height: 0;'),
     playbackVisibleAtLaptopHeight: circuitCss.includes('height: calc(100vh - 240px);')
       && circuitCss.includes('min-height: 128px;'),
