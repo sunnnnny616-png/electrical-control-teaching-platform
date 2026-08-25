@@ -119,8 +119,9 @@ definitions.forEach((definition) => {
       : initialMarkup.includes('x="1048" y="258" width="80" height="78"')
         && initialMarkup.includes('x="1210" y="270" width="64" height="54"'),
     flexibleCanvasHeight: circuitCss.includes('.ch01-circuit-svg {\n  width: 100%;\n  height: 100%;\n  min-height: 0;'),
-    matureLaptopPixelScale: circuitCss.includes('#chapterModuleCanvas .ch01-circuit-svg {\n    height: 93.84%;\n    margin: auto;'),
-    matureLaptopInlineScale: initialMarkup.includes('style="height:93.84%;margin:auto"'),
+    matureLaptopPixelScale: circuitCss.includes('transform: scale(.9384);')
+      && circuitCss.includes('transform-origin: center;'),
+    matureLaptopInlineScale: initialMarkup.includes('transform:scale(.9384);transform-origin:center'),
     playbackVisibleAtLaptopHeight: circuitCss.includes('height: calc(100vh - 240px);')
       && circuitCss.includes('min-height: 128px;'),
     activeCurrentFlow: activeMarkup.includes("ch01-wire-flow"),
