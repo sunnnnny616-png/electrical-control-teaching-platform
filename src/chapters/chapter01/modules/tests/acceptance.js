@@ -7,7 +7,9 @@ const vm = require("vm");
 const repositoryRoot = path.resolve(__dirname, "../../../../..");
 const captureDirectory = process.env.ECTP_CAPTURE_DIR || "";
 const circuitCss = fs.readFileSync(path.join(repositoryRoot, "src/chapters/chapter01/modules/chapter01-circuits.css"), "utf8");
-const standaloneCircuitCss = circuitCss.replaceAll('[data-module^="ch01_"] ', "");
+const standaloneCircuitCss = circuitCss
+  .replaceAll('[data-module^="ch01_"] ', "")
+  .replaceAll('[data-module="ch01_jog"] ', "");
 const sources = [
   "src/schemas/module-contract.js",
   "src/platform/runtime/runtime-scope.js",
