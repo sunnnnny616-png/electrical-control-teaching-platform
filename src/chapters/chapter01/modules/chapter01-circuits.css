@@ -64,86 +64,18 @@
   font-weight: 800;
   text-anchor: middle;
 }
-[data-module^="ch01_"] .ch01-target-circuit .ch01-terminal-core { fill: #f59e0b; stroke: none; }
-[data-module^="ch01_"] .ch01-target-circuit .ch01-contact-fixed { fill: #f59e0b; stroke: #536176; stroke-width: 1.4; }
-[data-module^="ch01_"] .ch01-target-circuit .ch01-device-channel rect,
-[data-module^="ch01_"] .ch01-target-circuit .ch01-fr-channel rect,
-[data-module^="ch01_"] .ch01-target-circuit .ch01-target-fuse rect {
-  fill: #f8fbff;
-  stroke: #91a3ba;
-  stroke-width: 2.5;
+[data-module^="ch01_"] .ch01-target-circuit .sim-terminal,
+[data-module^="ch01_"] .ch01-target-circuit .sim-contact-frame,
+[data-module^="ch01_"] .ch01-target-circuit .sim-fuse-shell,
+[data-module^="ch01_"] .ch01-target-circuit .sim-coil-body,
+[data-module^="ch01_"] .ch01-target-circuit .sim-fr-channel,
+[data-module^="ch01_"] .ch01-target-circuit .sim-motor-shell {
+  vector-effect: non-scaling-stroke;
 }
-[data-module^="ch01_"] .ch01-target-circuit .ch01-device-channel .ch01-contact {
-  stroke: #ff4d4f;
-  stroke-width: 4;
+[data-module^="ch01_"] .ch01-target-circuit .ch01-target-motor.is-fault .sim-motor-shell {
+  fill: #fff0f0;
+  stroke: #d83c3c;
 }
-[data-module^="ch01_"] .ch01-target-circuit .ch01-device-channel .ch01-contact.is-closed { stroke: #15945a; }
-[data-module^="ch01_"] .ch01-target-circuit .ch01-target-fuse line,
-[data-module^="ch01_"] .ch01-target-circuit .ch01-target-fuse path {
-  fill: none;
-  stroke: #e8902f;
-  stroke-width: 3;
-}
-[data-module^="ch01_"] .ch01-target-circuit .ch01-fr-channel path {
-  fill: none;
-  stroke: #26364b;
-  stroke-width: 3;
-}
-[data-module^="ch01_"] .ch01-target-circuit .ch01-fr-channel.is-overload rect { fill: #fff1f0; stroke: #e44242; }
-[data-module^="ch01_"] .ch01-target-circuit .ch01-push-cap {
-  fill: #7ee1bd;
-  stroke: #4aa982;
-  stroke-width: 2;
-}
-[data-module^="ch01_"] .ch01-target-circuit .ch01-push-stem,
-[data-module^="ch01_"] .ch01-target-circuit .ch01-target-coil > line,
-[data-module^="ch01_"] .ch01-target-circuit .ch01-target-motor > path {
-  fill: none;
-  stroke: #66768b;
-  stroke-width: 2.5;
-}
-[data-module^="ch01_"] .ch01-target-circuit .ch01-target-coil rect {
-  fill: #edf2f7;
-  stroke: #91a3ba;
-  stroke-width: 3;
-}
-[data-module^="ch01_"] .ch01-target-circuit .ch01-target-coil > path {
-  fill: none;
-  stroke: #c96613;
-  stroke-width: 4;
-}
-[data-module^="ch01_"] .ch01-target-circuit .ch01-target-coil.is-active rect { fill: #dcfce7; stroke: #15945a; }
-[data-module^="ch01_"] .ch01-target-circuit .ch01-target-fr-nc > rect {
-  fill: #f8fbff;
-  fill-opacity: .88;
-  stroke: #91a3ba;
-  stroke-width: 2.5;
-}
-[data-module^="ch01_"] .ch01-target-circuit .ch01-target-motor > circle {
-  fill: #eef4fa;
-  stroke: #536985;
-  stroke-width: 3;
-}
-[data-module^="ch01_"] .ch01-target-circuit .ch01-target-motor > rect {
-  fill: #f8fbff;
-  stroke: #536985;
-  stroke-width: 2.5;
-}
-[data-module^="ch01_"] .ch01-target-circuit .ch01-motor-fins line,
-[data-module^="ch01_"] .ch01-target-circuit .ch01-rotor line,
-[data-module^="ch01_"] .ch01-target-circuit .ch01-rotor circle {
-  stroke: #6c809a;
-  stroke-width: 2.5;
-  fill: none;
-}
-[data-module^="ch01_"] .ch01-target-circuit .ch01-rotor {
-  transform-box: fill-box;
-  transform-origin: center;
-}
-[data-module^="ch01_"] .ch01-target-circuit .ch01-target-motor.is-running .ch01-rotor {
-  animation: ch01-motor-spin 1.2s linear infinite;
-}
-[data-module^="ch01_"] .ch01-target-circuit .ch01-target-motor.is-fault > circle { fill: #fff0f0; stroke: #d83c3c; }
 
 [data-module="ch01_direct_start_protection"] .ch01-target-protection .ch01-target-aux .ch01-contact.is-closed {
   stroke: #15945a;
