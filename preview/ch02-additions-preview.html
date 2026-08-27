@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>第二章新增模块预览 · 电器控制系统交互式教学平台</title>
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="../src/platform/shell/platform-shell-v1.css" />
+  <link rel="stylesheet" href="../src/chapters/chapter02/modules/ch02_mixed_jog_continuous/module.css" />
+  <link rel="stylesheet" href="../src/chapters/chapter02/modules/ch02_multi_point/module.css" />
+  <link rel="stylesheet" href="../src/chapters/chapter02/modules/ch02_machine_tool_circuits/module.css" />
+  <link rel="stylesheet" href="./ch02-additions-preview.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <span class="platform-logo" aria-hidden="true"></span>
+      <div class="preview-topbar-copy">
+        <div class="topbar-brand">电器控制系统交互式教学平台</div>
+        <small>第二章增量模块 · 独立预览（不修改现有成熟模块与公共层）</small>
+      </div>
+    </header>
+
+    <div class="workspace">
+      <aside class="sidebar">
+        <div class="sidebar-title">第二章 电器控制系统</div>
+        <nav class="preview-module-list" aria-label="新增实验模块">
+          <button class="preview-module-button active" data-module-route="mixed-jog-continuous"><span class="num">05</span><span class="label">点动/长动混合</span></button>
+          <button class="preview-module-button" data-module-route="multi-point-control"><span class="num">06</span><span class="label">多地点控制</span></button>
+          <button class="preview-module-button" data-module-route="machine-tool-circuits"><span class="num">07</span><span class="label">机床综合线路</span></button>
+        </nav>
+        <div class="preview-identity-note"><strong>协作身份</strong>本预览只加载两个新增模块。正式提交仅包含新增文件，不改动 index.html、Registry、Schema、Platform 与第二章现有四个成熟模块。</div>
+      </aside>
+
+      <section class="stage-panel">
+        <article class="stage-card preview-stage-card">
+          <header class="stage-card-head preview-stage-head">
+            <h3 id="previewTitle">点动与长动混合控制</h3>
+            <p id="previewSubtitle">比较三种接线方案在点动、长动、自锁与停止路径上的差异。</p>
+          </header>
+          <div id="previewExperimentRoot" class="preview-experiment-root" aria-live="polite"></div>
+        </article>
+        <footer class="footerbar preview-footer">
+          <h3>动作原理 / 步骤回放</h3>
+          <ol id="previewSteps" class="preview-step-list"></ol>
+        </footer>
+      </section>
+
+      <aside class="inspector">
+        <section class="operation-control-card">
+          <h3>操作控制区</h3>
+          <div id="previewPower" class="preview-power-row"></div>
+          <div id="previewControls" class="preview-controls"></div>
+          <div id="previewProtection" class="preview-protection-row"></div>
+          <button id="previewReset" class="preview-small-button" type="button">复位当前模块</button>
+        </section>
+        <section class="info-card">
+          <h3>当前状态</h3>
+          <div id="previewStatus" class="preview-status-grid"></div>
+        </section>
+        <section class="info-card">
+          <h3>动作原理</h3>
+          <div id="previewFeedback" class="preview-feedback"></div>
+        </section>
+        <section class="info-card" id="aiPlaceholderCard">
+          <h3>AI分析占位</h3>
+          <div class="box"><strong>预留</strong><p>后续可读取标准 State / Solver Result / Teaching Feedback；本次不接入真实 API。</p></div>
+        </section>
+        <section class="info-card">
+          <h3>验收诊断</h3>
+          <p id="previewDiagnostics" class="preview-diagnostics">正在运行 Contract 与 Solver 检查…</p>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <script src="../src/schemas/module-contract.js"></script>
+  <script src="../src/platform/runtime/runtime-scope.js"></script>
+  <script src="../src/registry/module-registry.js"></script>
+  <script src="../src/platform/module-loader/module-loader.js"></script>
+  <script src="../src/platform/module-adapter/facade-module-adapter.js"></script>
+
+  <script src="../src/chapters/chapter02/modules/ch02_mixed_jog_continuous/circuit.data.js"></script>
+  <script src="../src/chapters/chapter02/modules/ch02_mixed_jog_continuous/solver.js"></script>
+  <script src="../src/chapters/chapter02/modules/ch02_mixed_jog_continuous/teaching.js"></script>
+  <script src="../src/chapters/chapter02/modules/ch02_mixed_jog_continuous/view.js"></script>
+  <script src="../src/chapters/chapter02/modules/ch02_mixed_jog_continuous/facade.js"></script>
+  <script src="../src/chapters/chapter02/modules/ch02_mixed_jog_continuous/module.js"></script>
+
+  <script src="../src/chapters/chapter02/modules/ch02_multi_point/circuit.data.js"></script>
+  <script src="../src/chapters/chapter02/modules/ch02_multi_point/solver.js"></script>
+  <script src="../src/chapters/chapter02/modules/ch02_multi_point/teaching.js"></script>
+  <script src="../src/chapters/chapter02/modules/ch02_multi_point/view.js"></script>
+  <script src="../src/chapters/chapter02/modules/ch02_multi_point/facade.js"></script>
+  <script src="../src/chapters/chapter02/modules/ch02_multi_point/module.js"></script>
+
+  <script src="../src/chapters/chapter02/modules/ch02_machine_tool_circuits/circuit.data.js"></script>
+  <script src="../src/chapters/chapter02/modules/ch02_machine_tool_circuits/solver.js"></script>
+  <script src="../src/chapters/chapter02/modules/ch02_machine_tool_circuits/teaching.js"></script>
+  <script src="../src/chapters/chapter02/modules/ch02_machine_tool_circuits/view.js"></script>
+  <script src="../src/chapters/chapter02/modules/ch02_machine_tool_circuits/facade.js"></script>
+  <script src="../src/chapters/chapter02/modules/ch02_machine_tool_circuits/module.js"></script>
+
+  <script src="./ch02-additions-preview.js"></script>
+</body>
+</html>

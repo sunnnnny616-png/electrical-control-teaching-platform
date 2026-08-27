@@ -1,0 +1,207 @@
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+}
+
+.preview-topbar-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.preview-topbar-copy small {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.preview-module-list {
+  display: grid;
+  gap: 6px;
+}
+
+.preview-module-button {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  align-items: center;
+  width: 100%;
+  min-height: 46px;
+  padding: 7px 9px;
+  border: 0;
+  border-radius: 8px;
+  color: #1f2937;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.preview-module-button:hover { background: #f5f8fc; }
+.preview-module-button.active { color: var(--platform-blue); background: var(--platform-blue-soft); }
+.preview-module-button .num { font-size: 14px; font-weight: 750; }
+.preview-module-button .label { font-size: 13px; font-weight: 650; }
+
+.preview-identity-note {
+  margin-top: auto;
+  padding: 11px;
+  border: 1px solid #dbe7f5;
+  border-radius: 8px;
+  color: #334155;
+  background: #f7fbff;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.preview-identity-note strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #0b63e6;
+}
+
+.preview-stage-head { display: block; }
+
+.preview-stage-card {
+  height: 708px;
+  min-height: 708px;
+}
+
+.preview-experiment-root {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.preview-experiment-root > section { width: 100%; }
+
+.preview-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.preview-action-button,
+.preview-small-button {
+  border: 1px solid #dce3ec;
+  border-radius: 8px;
+  color: #111827;
+  background: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.preview-action-button {
+  min-height: 58px;
+  padding: 8px;
+  font-size: 12px;
+}
+
+.preview-action-button:hover,
+.preview-small-button:hover { border-color: #98b5da; background: #f8fbff; }
+
+.preview-action-button.is-stop { color: #b4232d; }
+.preview-action-button.is-running { color: #0b7a3a; background: #effaf3; }
+
+.preview-button-subtitle {
+  display: block;
+  margin-top: 4px;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.preview-power-row,
+.preview-protection-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 9px;
+}
+
+.preview-protection-row .preview-small-button { min-width: calc(50% - 4px); }
+
+.preview-small-button {
+  flex: 1;
+  min-height: 34px;
+  padding: 6px 9px;
+  font-size: 11px;
+}
+
+.preview-small-button.is-on { color: #0b7a3a; border-color: #a7d8b8; background: #effaf3; }
+.preview-small-button.is-danger { color: #b4232d; border-color: #f0b8bd; background: #fff7f7; }
+
+.preview-status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid #e3e8ef;
+  border-radius: 8px;
+}
+
+.preview-status-item {
+  min-height: 48px;
+  padding: 8px 10px;
+  border-right: 1px solid #e8edf3;
+  border-bottom: 1px solid #e8edf3;
+}
+
+.preview-status-item:nth-child(even) { border-right: 0; }
+.preview-status-label { display: block; color: #64748b; font-size: 10px; }
+.preview-status-value { display: block; margin-top: 4px; color: #111827; font-size: 11px; font-weight: 750; }
+.preview-status-value.tone-forward,
+.preview-status-value.tone-on { color: #0b7a3a; }
+.preview-status-value.tone-error { color: #b4232d; }
+
+.preview-feedback {
+  min-height: 82px;
+  padding: 10px;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.preview-feedback strong { color: #0f172a; font-size: 12px; }
+.preview-feedback p { margin: 5px 0 0; color: #334155; font-size: 11px; line-height: 1.55; }
+
+.preview-step-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.preview-step-list li {
+  padding-left: 9px;
+  border-left: 3px solid #c9d7e7;
+  color: #334155;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.preview-step-list strong { color: #111827; }
+
+.preview-diagnostics {
+  margin: 0;
+  color: #475569;
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.preview-footer {
+  min-height: 126px;
+  padding: 14px 18px;
+}
+
+.preview-footer h3 { margin: 0 0 9px; font-size: 15px; }
+
+.preview-error {
+  padding: 18px;
+  color: #991b1b;
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  border-radius: 8px;
+  white-space: pre-wrap;
+}
