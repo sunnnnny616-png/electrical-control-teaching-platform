@@ -29,7 +29,7 @@ function render(name, operationState) {
   view.render({ data, state: solved.state, result: solved.solverResult });
   const match = rootNode.innerHTML.match(/<svg[^>]*>([\s\S]*?)<\/svg>/);
   if (!match) throw new Error(`SVG not found for ${name}`);
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 620" width="1560" height="930"><style>${css}</style><rect width="1040" height="620" fill="#fff"/>${match[1]}</svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1498 1135" width="1498" height="1135"><style>${css}</style><rect width="1498" height="1135" fill="#fff"/>${match[1]}</svg>`;
   fs.writeFileSync(path.join(output, `${name}.svg`), svg);
 }
 
