@@ -2765,6 +2765,7 @@
     }
   </style>
   <link rel="stylesheet" href="./src/platform/shell/platform-shell-v1.css?v=20260822-2" />
+  <link rel="stylesheet" href="./src/chapters/chapter01/modules/chapter01-circuits.css?v=20260825-3" />
 </head>
 <body>
   <div class="app-shell">
@@ -2797,6 +2798,7 @@
 
           <div id="experimentRoot" class="experiment-root">
           <div id="placeholderCanvas" class="module-canvas"></div>
+          <div id="chapterModuleCanvas" class="module-canvas hidden" aria-live="polite"></div>
 
           <div id="forwardReverseCanvas" class="module-canvas hidden">
             <div class="board-shell stage-board calibration-shell">
@@ -3215,6 +3217,13 @@
   <script src="./src/registry/module-registry.js"></script>
   <script src="./src/platform/module-loader/module-loader.js"></script>
   <script src="./src/platform/module-adapter/facade-module-adapter.js"></script>
+  <script src="./src/chapters/chapter01/modules/_shared/direct-start-runtime.js?v=20260825-4"></script>
+  <script src="./src/chapters/chapter01/modules/ch01_jog/circuit-data.js"></script>
+  <script src="./src/chapters/chapter01/modules/ch01_direct_start_protection/circuit-data.js"></script>
+  <script src="./src/chapters/chapter01/modules/ch01_jog/facade.js"></script>
+  <script src="./src/chapters/chapter01/modules/ch01_direct_start_protection/facade.js"></script>
+  <script src="./src/chapters/chapter01/modules/ch01_jog/module.js"></script>
+  <script src="./src/chapters/chapter01/modules/ch01_direct_start_protection/module.js"></script>
   <script src="./src/chapters/chapter02/modules/ch02_main_control/facade.js"></script>
   <script src="./src/chapters/chapter02/modules/ch02_jog/facade.js"></script>
   <script src="./src/chapters/chapter02/modules/ch02_continuous/facade.js"></script>
@@ -3228,6 +3237,28 @@
     window.__FORWARD_REVERSE_BUILD_ID__ = "artifact-audit-2026-08-14-v1";
 
     const moduleCatalog = {
+      "ch01-jog-control": {
+        code: "01",
+        name: "点动控制",
+        experimentTitle: "点动控制演示",
+        experimentSubtitle: "按住启动按钮时，KM 线圈得电并接通主回路；按钮松开后，线圈释放，电机立即停止。",
+        principleTitle: "点动控制原理",
+        principleText: "点动线路没有自锁支路，按钮的按下时间直接决定 KM 与电动机的运行时间。",
+        promptText: "先合上 QF，再按住并松开 SB；也可触发 FR 过载，观察保护触点切断控制回路。",
+        footerTip: "参考 PDF 第 3、12 页；电路由模块数据驱动，可重复复位和修改。",
+        placeholderTag: "", placeholderNote: "", zones: []
+      },
+      "ch01-direct-start-protection": {
+        code: "02",
+        name: "综合直接启动保护",
+        experimentTitle: "综合直接启动保护演示",
+        experimentSubtitle: "QF1、FU、SB1、SB2、KM1、FR1 和 M 组成完整直接启动链路，具有自锁、停止和过载保护功能。",
+        principleTitle: "综合直接启动保护原理",
+        principleText: "SB1 建立启动通路，KM1 辅助常开触点完成自锁；SB2 或 FR1 断开控制回路后，KM1 释放，电动机停止。",
+        promptText: "依次执行 QF1 合闸、SB1 启动、SB2 停止、FR1 过载与复位，观察完整保护链路。",
+        footerTip: "参考 PDF 第 11 页；复位保护不会自动重启。",
+        placeholderTag: "", placeholderNote: "", zones: []
+      },
       "main-control": {
         code: "01",
         name: "主电路与控制电路",
@@ -3536,6 +3567,7 @@
       experimentTitle: document.getElementById("experimentTitle"),
       experimentSubtitle: document.getElementById("experimentSubtitle"),
       placeholderCanvas: document.getElementById("placeholderCanvas"),
+      chapterModuleCanvas: document.getElementById("chapterModuleCanvas"),
       forwardReverseCanvas: document.getElementById("forwardReverseCanvas"),
       boardShell: document.querySelector("#forwardReverseCanvas .board-shell"),
       boardSvg: document.getElementById("boardSvg"),
@@ -6412,8 +6444,13 @@
       return uiState.currentModule === "jog-control";
     }
 
+    function isChapterOneNativeModule() {
+      return uiState.currentModule === "ch01-jog-control"
+        || uiState.currentModule === "ch01-direct-start-protection";
+    }
+
     function isLiveCircuitModule() {
-      return isForwardReverseModule() || isMainControlModule() || isContinuousControlModule() || isJogControlModule();
+      return isForwardReverseModule() || isMainControlModule() || isContinuousControlModule() || isJogControlModule() || isChapterOneNativeModule();
     }
 
     function getActiveReferenceConfig() {
@@ -11583,8 +11620,9 @@
       refs.referenceSourceImage.setAttribute("preserveAspectRatio", "none");
 
       const live = isLiveCircuitModule();
-      const showDeveloperControls = live && hasDeveloperToolsEnabled();
-      refs.forwardReverseCanvas.classList.toggle("hidden", !live);
+      const showDeveloperControls = live && !isChapterOneNativeModule() && hasDeveloperToolsEnabled();
+      refs.forwardReverseCanvas.classList.toggle("hidden", !live || isChapterOneNativeModule());
+      refs.chapterModuleCanvas.classList.toggle("hidden", !isChapterOneNativeModule());
       refs.placeholderCanvas.classList.toggle("hidden", live);
       refs.developerCalibrationCard.classList.toggle("hidden", !showDeveloperControls);
       refs.developerPreviewCard.classList.toggle("hidden", !showDeveloperControls || isMainControlModule() || isContinuousControlModule() || isJogControlModule());
@@ -11974,6 +12012,14 @@
     function render() {
       updateModuleShell();
       renderActionFeedback();
+
+      if (isChapterOneNativeModule()) {
+        resetCircuitViewportTransform();
+        getCurrentFacadeInstance()?.render();
+        renderCurrentFacadeStatusViewModel();
+        renderCurrentFacadeTeachingFeedback();
+        return;
+      }
 
       if (isContinuousControlModule()) {
         renderContinuousControlModule();
@@ -12468,21 +12514,25 @@
 
     function handlePrimaryPlatformAction() {
       if (dispatchCurrentFacadeControl("primary")) return;
+      if (getCurrentFacadeInstance()) return;
       handlePrimaryActionButtonClick();
     }
 
     function handleSecondaryPlatformAction() {
       if (dispatchCurrentFacadeControl("secondary")) return;
+      if (getCurrentFacadeInstance()) return;
       handleSecondaryActionButtonClick();
     }
 
     function handleTertiaryPlatformAction() {
       if (dispatchCurrentFacadeControl("tertiary")) return;
+      if (getCurrentFacadeInstance()) return;
       handleTertiaryActionButtonClick();
     }
 
     function handleQuaternaryPlatformAction() {
       if (dispatchCurrentFacadeControl("quaternary")) return;
+      if (getCurrentFacadeInstance()) return;
       handleFourthActionButtonClick();
     }
 
@@ -12530,7 +12580,9 @@
     }
 
     function openQf1() {
-      if (!isLiveCircuitModule() || !isSimulationSolverMode() || !isCurrentQfClosed()) return;
+      if (!isLiveCircuitModule() || !isCurrentQfClosed()) return;
+      if (getCurrentFacadeInstance()) return dispatchCurrentFacadeAction("POWER_OPEN");
+      if (!isSimulationSolverMode()) return;
       if (dispatchCurrentFacadeAction("POWER_OPEN")) return;
       toggleQf1();
     }
@@ -13539,6 +13591,17 @@
       });
     }
 
+    function renderCurrentFacadeTeachingFeedback() {
+      const facadeInstance = getCurrentFacadeInstance();
+      if (!facadeInstance) return;
+      const teaching = facadeInstance.buildTeachingFeedback();
+      if (!teaching) return;
+      refs.teachTitle.textContent = teaching.title || moduleCatalog[uiState.currentModule].principleTitle;
+      refs.teachText.textContent = teaching.text || moduleCatalog[uiState.currentModule].principleText;
+      refs.tipText.textContent = moduleCatalog[uiState.currentModule].promptText;
+      refs.footerTip.textContent = moduleCatalog[uiState.currentModule].footerTip;
+    }
+
     function getLegacyCircuitData(routeId) {
       if (routeId === "main-control") {
         return Object.freeze({
@@ -13773,6 +13836,8 @@
 
       platformModuleRegistry = platform.registry.createModuleRegistry(platform.contracts);
       const registrations = [
+        platform.moduleDefinitions.createCh01Jog(),
+        platform.moduleDefinitions.createCh01DirectStartProtection(),
         platform.moduleDefinitions.createCh02MainControl({
           circuitData: getLegacyCircuitData("main-control"),
           port: createMainControlModulePort()
@@ -13803,7 +13868,7 @@
       platformModuleLoader = platform.loader.createModuleLoader({
         registry: platformModuleRegistry,
         mountRoot: refs.experimentRoot,
-        services: Object.freeze({ setActionFeedback }),
+        services: Object.freeze({ setActionFeedback, renderShell: render }),
         setActiveModuleId: (routeId) => {
           uiState.currentModule = routeId;
           state.actionFeedback = {
@@ -13812,6 +13877,7 @@
           };
           resetCircuitViewportTransform();
           platformNavigation.updateActive(routeId);
+          queueMicrotask(() => render());
         }
       });
 

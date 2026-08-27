@@ -1,0 +1,143 @@
+[data-module^="ch01_"] .ch01-circuit-svg {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: block;
+  background: #fff;
+}
+
+[data-module^="ch01_"] text { font-family: "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; fill: #172033; }
+[data-module^="ch01_"] .ch01-zone-title { font-size: 24px; font-weight: 800; }
+[data-module^="ch01_"] .ch01-zone-title.main { fill: #16864b; }
+[data-module^="ch01_"] .ch01-zone-title.control { fill: #1769d2; }
+[data-module^="ch01_"] .ch01-wire-base { fill: none; stroke: #aeb8c7; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+[data-module^="ch01_"] .ch01-wire-base.ch01-phase-l1 { stroke: #d7a20a; }
+[data-module^="ch01_"] .ch01-wire-base.ch01-phase-l2 { stroke: #15944f; }
+[data-module^="ch01_"] .ch01-wire-base.ch01-phase-l3 { stroke: #e84343; }
+[data-module^="ch01_"] .ch01-wire-control { stroke-width: 3.5; }
+[data-module^="ch01_"] .ch01-wire-partial { fill: none; stroke: #e0a32f; stroke-width: 4; stroke-dasharray: 7 8; }
+[data-module^="ch01_"] .ch01-terminal { fill: #fff; stroke: #526176; stroke-width: 2; }
+[data-module^="ch01_"] .ch01-contact { stroke: #5c697a; stroke-width: 5; stroke-linecap: round; transition: 160ms ease; }
+[data-module^="ch01_"] .ch01-contact.is-closed { stroke: #14945d; }
+[data-module^="ch01_"] .ch01-device-label { font-size: 16px; font-weight: 700; }
+[data-module^="ch01_"] .ch01-label-centered,
+[data-module^="ch01_"] .ch01-terminal-number { text-anchor: middle; }
+[data-module^="ch01_"] .ch01-label-side { text-anchor: end; }
+[data-module^="ch01_"] .ch01-terminal-number { font-size: 12px; font-weight: 700; fill: #64748b; }
+[data-module^="ch01_"] .ch01-hit-target { fill: #fff; fill-opacity: 0; stroke: none; pointer-events: all; }
+[data-module^="ch01_"] .ch01-supplies text { font-size: 17px; font-weight: 800; text-anchor: middle; }
+[data-module^="ch01_"] .ch01-fuse rect { fill: #f6fbff; stroke: #526176; stroke-width: 3; }
+[data-module^="ch01_"] .ch01-fuse line { stroke: #e58c27; stroke-width: 4; }
+[data-module^="ch01_"] .ch01-fuse text { font-size: 16px; font-weight: 800; text-anchor: middle; }
+[data-module^="ch01_"] .ch01-fr-main rect { fill: #f6fbff; stroke: #5b697c; stroke-width: 3; }
+[data-module^="ch01_"] .ch01-fr-main path { fill: none; stroke: #e58c27; stroke-width: 4; }
+[data-module^="ch01_"] .ch01-fr-main text { font-size: 18px; font-weight: 800; }
+[data-module^="ch01_"] .ch01-fr-main.is-overload rect { fill: #fff1f0; stroke: #e44242; }
+[data-module^="ch01_"] .ch01-coil rect { fill: #eef3f8; stroke: #57677c; stroke-width: 3; }
+[data-module^="ch01_"] .ch01-coil text { font-size: 18px; font-weight: 800; text-anchor: middle; }
+[data-module^="ch01_"] .ch01-coil.is-active rect { fill: #dcfce7; stroke: #14945d; }
+[data-module^="ch01_"] .ch01-motor circle { fill: #edf4fb; stroke: #536985; stroke-width: 4; }
+[data-module^="ch01_"] .ch01-motor .ch01-motor-terminal-block { fill: #f8fbff; stroke: #536985; stroke-width: 3; }
+[data-module^="ch01_"] .ch01-motor .ch01-motor-terminal { fill: #fff; stroke: #536985; stroke-width: 2; }
+[data-module^="ch01_"] .ch01-motor > text { font-size: 28px; font-weight: 900; text-anchor: middle; }
+[data-module^="ch01_"] .ch01-rotor { fill: #7792b4; transform-box: fill-box; transform-origin: center; }
+[data-module^="ch01_"] .ch01-motor.is-running .ch01-rotor { animation: ch01-motor-spin 1.2s linear infinite; fill: #18a56b; }
+[data-module^="ch01_"] .ch01-motor.is-fault circle { fill: #fff0f0; stroke: #d83c3c; }
+[data-module^="ch01_"] .ch01-clickable { cursor: pointer; }
+[data-module^="ch01_"] .ch01-clickable:hover .ch01-contact,
+[data-module^="ch01_"] .ch01-clickable:hover rect { filter: drop-shadow(0 0 5px rgba(40, 116, 255, .35)); }
+
+[data-module^="ch01_"] .ch01-target-circuit {
+  max-width: 100%;
+  overflow: visible;
+}
+[data-module^="ch01_"] .ch01-target-circuit .ch01-zone-title { font-size: 17px; fill: #172033; }
+[data-module^="ch01_"] .ch01-target-circuit .ch01-wire-base { stroke-width: 3.2; }
+[data-module^="ch01_"] .ch01-target-circuit .ch01-wire-control { stroke: #aeb8c7; }
+[data-module^="ch01_"] .ch01-target-circuit .ch01-phase-label {
+  font-size: 16px;
+  font-weight: 800;
+  text-anchor: middle;
+}
+[data-module^="ch01_"] .ch01-target-circuit .sim-terminal,
+[data-module^="ch01_"] .ch01-target-circuit .sim-contact-frame,
+[data-module^="ch01_"] .ch01-target-circuit .sim-fuse-shell,
+[data-module^="ch01_"] .ch01-target-circuit .sim-coil-body,
+[data-module^="ch01_"] .ch01-target-circuit .sim-fr-channel,
+[data-module^="ch01_"] .ch01-target-circuit .sim-motor-shell {
+  vector-effect: non-scaling-stroke;
+}
+[data-module^="ch01_"] .ch01-target-circuit .ch01-target-motor.is-fault .sim-motor-shell {
+  fill: #fff0f0;
+  stroke: #d83c3c;
+}
+
+[data-module="ch01_direct_start_protection"] .ch01-target-protection .ch01-target-aux .ch01-contact.is-closed {
+  stroke: #15945a;
+}
+[data-module="ch01_direct_start_protection"] .ch01-target-protection .ch01-target-aux.is-active .ch01-hit-target {
+  fill: #e9fbf2;
+  fill-opacity: .45;
+}
+[data-module="ch01_direct_start_protection"] .ch01-target-protection .ch01-stop-cap {
+  fill: #fca5a5;
+  stroke: #dc5252;
+  stroke-width: 2;
+}
+[data-module="ch01_direct_start_protection"] .ch01-target-protection .ch01-supply-mark {
+  font-size: 17px;
+  font-weight: 800;
+  text-anchor: middle;
+  fill: #1769d2;
+}
+
+@media (min-width: 1181px) and (max-width: 1480px) {
+  body:has(#chapterModuleCanvas [data-module^="ch01_"]) .workspace {
+    grid-template-columns: 250px minmax(0, 1fr) 350px;
+  }
+  body:has(#chapterModuleCanvas [data-module^="ch01_"]) .inspector {
+    position: sticky;
+    grid-column: auto;
+    display: flex;
+    grid-template-columns: none;
+    max-height: calc(100vh - 100px);
+  }
+}
+
+/* Keep the complete playback strip visible on common laptop-height viewports. */
+@media (min-width: 1181px) and (max-height: 980px) {
+  body:has(#chapterModuleCanvas [data-module^="ch01_"]) #chapterModuleCanvas .ch01-circuit-svg {
+    height: 93.84%;
+    margin: auto;
+    transform: scale(.9384);
+    transform-origin: center;
+  }
+
+  body:has(#chapterModuleCanvas [data-module^="ch01_"]) .stage-card {
+    height: calc(100vh - 240px);
+    min-height: 580px;
+  }
+
+  body:has(#chapterModuleCanvas [data-module^="ch01_"]) .stage-card-head {
+    padding: 12px 18px 10px;
+  }
+
+  body:has(#chapterModuleCanvas [data-module^="ch01_"]) .stage-card-head h3 {
+    margin-bottom: 5px;
+    font-size: 20px;
+  }
+
+  body:has(#chapterModuleCanvas [data-module^="ch01_"]) .footerbar {
+    min-height: 128px;
+  }
+
+  body:has(#chapterModuleCanvas [data-module^="ch01_"]) .footer-playback-panel {
+    padding: 10px 16px;
+  }
+}
+
+@keyframes ch01-motor-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 1100px) {
+  [data-module^="ch01_"] .ch01-circuit-svg { min-height: 0; }
+}
