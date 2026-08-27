@@ -1,0 +1,129 @@
+[data-module="ch02_machine_tool_circuits"] {
+  --machine-blue: var(--platform-blue, #0b63e6);
+  --machine-green: var(--platform-green, #159447);
+  --machine-red: var(--platform-red, #d9232e);
+  --machine-wire: #27364a;
+  width: 100%;
+  min-height: 100%;
+  color: #111827;
+  font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+}
+
+[data-module="ch02_machine_tool_circuits"] .machine-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 10px 9px;
+  border-bottom: 1px solid #e5eaf0;
+}
+
+[data-module="ch02_machine_tool_circuits"] .machine-tabs { display: flex; gap: 6px; }
+
+[data-module="ch02_machine_tool_circuits"] .machine-tab {
+  min-height: 30px;
+  padding: 5px 10px;
+  border: 1px solid #d9e2ec;
+  border-radius: 7px;
+  color: #334155;
+  background: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+[data-module="ch02_machine_tool_circuits"] .machine-tab[aria-pressed="true"] {
+  color: #fff;
+  border-color: var(--machine-blue);
+  background: var(--machine-blue);
+}
+
+[data-module="ch02_machine_tool_circuits"] .machine-source { color: #64748b; font-size: 11px; }
+
+[data-module="ch02_machine_tool_circuits"] .machine-canvas-shell {
+  height: calc(100% - 48px);
+  min-height: 505px;
+  padding: 6px;
+  background: #fff;
+}
+
+[data-module="ch02_machine_tool_circuits"] .machine-canvas { width: 100%; height: 100%; display: block; }
+[data-module="ch02_machine_tool_circuits"] .machine-panel { fill: #fbfdff; stroke: #dce4ed; stroke-width: 1.5; }
+[data-module="ch02_machine_tool_circuits"] .machine-panel-title { fill: #0f172a; font-size: 18px; font-weight: 750; }
+[data-module="ch02_machine_tool_circuits"] .machine-panel-note,
+[data-module="ch02_machine_tool_circuits"] .machine-label-small { fill: #64748b; font-size: 12px; }
+[data-module="ch02_machine_tool_circuits"] .machine-label { fill: #111827; font-size: 14px; font-weight: 700; }
+[data-module="ch02_machine_tool_circuits"] .machine-rung-title { fill: #334155; font-size: 12px; font-weight: 750; }
+
+[data-module="ch02_machine_tool_circuits"] .machine-symbol,
+[data-module="ch02_machine_tool_circuits"] .machine-wire {
+  fill: none;
+  stroke: var(--machine-wire);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+[data-module="ch02_machine_tool_circuits"] .machine-wire.is-partial { stroke: #d59a17; }
+
+[data-module="ch02_machine_tool_circuits"] .machine-wire.is-active {
+  stroke: var(--machine-green);
+  stroke-width: 4.2;
+  stroke-dasharray: 9 7;
+  animation: machine-current-flow 1s linear infinite;
+}
+
+[data-module="ch02_machine_tool_circuits"] .machine-wire.phase-l2.is-active { stroke: #0ea5e9; }
+[data-module="ch02_machine_tool_circuits"] .machine-wire.phase-l3.is-active { stroke: #8b5cf6; }
+
+[data-module="ch02_machine_tool_circuits"] .machine-device.is-active .machine-symbol,
+[data-module="ch02_machine_tool_circuits"] .machine-device.is-active rect,
+[data-module="ch02_machine_tool_circuits"] .machine-device.is-active circle { stroke: var(--machine-green); }
+[data-module="ch02_machine_tool_circuits"] .machine-device.is-tripped .machine-symbol,
+[data-module="ch02_machine_tool_circuits"] .machine-device.is-tripped rect { stroke: var(--machine-red); }
+
+[data-module="ch02_machine_tool_circuits"] .machine-coil {
+  fill: #fff;
+  stroke: var(--machine-wire);
+  stroke-width: 3;
+  rx: 5px;
+  vector-effect: non-scaling-stroke;
+}
+
+[data-module="ch02_machine_tool_circuits"] .machine-device.is-active .machine-coil { fill: #eafaf1; }
+[data-module="ch02_machine_tool_circuits"] .machine-fuse,
+[data-module="ch02_machine_tool_circuits"] .machine-fr { fill: #fff; stroke: var(--machine-wire); stroke-width: 3; vector-effect: non-scaling-stroke; }
+
+[data-module="ch02_machine_tool_circuits"] .machine-motor-rotor {
+  fill: none;
+  stroke: #64748b;
+  stroke-width: 3;
+  stroke-dasharray: 10 6;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+[data-module="ch02_machine_tool_circuits"] .machine-motor-arrow { fill: none; stroke: #64748b; stroke-width: 3; }
+[data-module="ch02_machine_tool_circuits"] .machine-device.is-active .machine-motor-rotor,
+[data-module="ch02_machine_tool_circuits"] .machine-device.is-active .machine-motor-arrow { stroke: var(--machine-green); animation: machine-motor-spin 850ms linear infinite; }
+[data-module="ch02_machine_tool_circuits"] .machine-device.is-active.is-reverse .machine-motor-rotor,
+[data-module="ch02_machine_tool_circuits"] .machine-device.is-active.is-reverse .machine-motor-arrow { animation-direction: reverse; }
+
+[data-module="ch02_machine_tool_circuits"] .machine-timer-mark { fill: none; stroke: #64748b; stroke-width: 2; }
+[data-module="ch02_machine_tool_circuits"] .machine-section-rule { stroke: #dce4ed; stroke-width: 1.5; }
+[data-module="ch02_machine_tool_circuits"] .machine-status-chip { fill: #f1f5f9; stroke: #d8e0e8; }
+[data-module="ch02_machine_tool_circuits"] .machine-status-chip.is-on { fill: #e8f8ef; stroke: #8bd3aa; }
+[data-module="ch02_machine_tool_circuits"] .machine-status-text { fill: #334155; font-size: 12px; font-weight: 700; }
+[data-module="ch02_machine_tool_circuits"] .machine-motion-object rect { fill: #f1f5f9; stroke: #c9d7e7; }
+[data-module="ch02_machine_tool_circuits"] .machine-motion-object text { fill: #334155; font-size: 11px; font-weight: 700; }
+
+@keyframes machine-current-flow { to { stroke-dashoffset: -32; } }
+@keyframes machine-motor-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-module="ch02_machine_tool_circuits"] .machine-wire.is-active,
+  [data-module="ch02_machine_tool_circuits"] .machine-device.is-active .machine-motor-rotor,
+  [data-module="ch02_machine_tool_circuits"] .machine-device.is-active .machine-motor-arrow { animation: none; }
+}

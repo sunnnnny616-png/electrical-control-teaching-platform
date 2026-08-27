@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0",
+  "chapterId": "ch02",
+  "moduleId": "ch02_machine_tool_circuits",
+  "routeId": "machine-tool-circuits",
+  "order": 7,
+  "code": "07",
+  "title": "机床综合线路",
+  "shortTitle": "机床综合线路",
+  "simulationLevel": "S2",
+  "maturity": "M3",
+  "status": "ready",
+  "integrationMode": "facade-v1",
+  "geometryLockId": "ch02_machine_tool_circuits_geometry_v1_locked",
+  "reference": {
+    "source": "第二章 PPT 第90、104页（原图27、28）",
+    "circuits": ["CA6140卧式车床电气控制线路", "Z3040摇臂钻床电气控制线路"],
+    "prototypeBoundary": "SQ、KT、YV仅在本模块内验证，不升级为公共元件标准"
+  }
+}
