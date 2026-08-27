@@ -12,6 +12,7 @@ const files = [
   "src/platform/module-adapter/facade-module-adapter.js",
   "src/chapters/chapter02/modules/ch02_machine_tool_circuits/circuit.data.js",
   "src/chapters/chapter02/modules/ch02_machine_tool_circuits/solver.js",
+  "src/chapters/chapter02/modules/ch02_machine_tool_circuits/view.js",
   "src/chapters/chapter02/modules/ch02_machine_tool_circuits/teaching.js",
   "src/chapters/chapter02/modules/ch02_machine_tool_circuits/facade.js",
   "src/chapters/chapter02/modules/ch02_machine_tool_circuits/module.js"
@@ -35,6 +36,24 @@ check("正式公共层加载机床模块资源", publicIndex.includes("ch02_mach
 check("正式公共层注册机床综合线路", publicIndex.includes("platform.moduleDefinitions.createCh02MachineToolCircuits()"));
 check("第二章菜单顺序为05", definition.meta.chapterId === "ch02" && definition.meta.code === "05" && definition.meta.order === 5);
 check("公共层扩展操作区已接入", publicIndex.includes('id="moduleExtraControls"') && publicIndex.includes("control.payload || {}"));
+
+const renderFixture = (operationState) => {
+  const solver = platform.moduleSolvers.ch02MachineToolCircuits;
+  const solved = solver.solve(solver.createInitialState({ operationState }));
+  const rootNode = { innerHTML: "", querySelectorAll: () => [] };
+  const view = platform.moduleViews.createCh02MachineToolCircuitsView({ mountRoot: rootNode, dispatchAction: () => undefined });
+  view.render({ data: platform.moduleCircuitData.ch02MachineToolCircuits, state: solved.state, result: solved.solverResult });
+  return rootNode.innerHTML;
+};
+const caVisual = renderFixture({ variant: "ca6140", power: "closed", caCommand: "forward" });
+const zVisual = renderFixture({ variant: "z3040", power: "closed", zRocker: "up", zClamp: "loosen", zTimer: "completed", zSq2: "triggered" });
+const maturePieces = ["sim-terminal-outer", "sim-fuse-shell", "sim-contact-frame", "sim-button-cap-forward", "sim-coil-body", "sim-fr-channel", "sim-motor-shell"];
+check("两张图使用成熟元器件视觉体系", maturePieces.every((className) => caVisual.includes(className)) && maturePieces.every((className) => zVisual.includes(className)));
+check("电路画布比例与成熟模块一致", caVisual.includes('viewBox="0 0 1498 1135"') && zVisual.includes('viewBox="0 0 1498 1135"'));
+check("导线采用端子间分段渲染", (caVisual.match(/data-segment-index=/g) || []).length > 40 && (zVisual.match(/data-segment-index=/g) || []).length > 30);
+check("Z3040线圈导线精确收口", zVisual.includes('points="1032,570 1080,570"') && zVisual.includes('points="1190,570 1210,570"'));
+check("电机转子使用稳定双层锚点", /<g transform="translate\(305 945\)"><g class="sim-motor-rotor forward">/.test(caVisual));
+check("画布无旧版近似面板与贯穿线", !caVisual.includes("machine-panel") && !zVisual.includes("machine-panel"));
 
 instance.mount();
 instance.dispatchAction(action("POWER_CLOSE"));
