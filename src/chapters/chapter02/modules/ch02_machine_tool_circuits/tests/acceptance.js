@@ -28,6 +28,7 @@ const action = (type, payload = {}) => platform.contracts.createAction(type, pay
 const checks = [];
 const check = (name, condition) => checks.push({ name, passed: Boolean(condition) });
 const publicIndex = fs.readFileSync(path.join(root, "index.html"), "utf8");
+const viewSource = fs.readFileSync(path.join(root, "src/chapters/chapter02/modules/ch02_machine_tool_circuits/view.js"), "utf8");
 
 check("Module Contract有效", platform.contracts.validateModuleContract(instance).valid);
 check("Facade输出有效", (() => { try { platform.contracts.assertFacadeOutputs(instance); return true; } catch (_) { return false; } })());
@@ -54,6 +55,8 @@ check("导线采用端子间分段渲染", (caVisual.match(/data-segment-index=/
 check("Z3040线圈导线精确收口", zVisual.includes('points="1032,570 1080,570"') && zVisual.includes('points="1190,570 1210,570"'));
 check("电机转子使用稳定双层锚点", /<g transform="translate\(305 945\)"><g class="sim-motor-rotor forward">/.test(caVisual));
 check("画布无旧版近似面板与贯穿线", !caVisual.includes("machine-panel") && !zVisual.includes("machine-panel"));
+check("辅助触点采用标准单活动触片", caVisual.includes('class="sim-contact-blade') && zVisual.includes('class="sim-contact-blade') && !caVisual.includes("sim-nc-mark") && !zVisual.includes("sim-nc-mark"));
+check("辅助触点闭合时精确连接固定触点", viewSource.includes("bladeStart=l+4,bladeEnd=r-4") && viewSource.includes("bladeEndY=closed?y:y-10"));
 
 instance.mount();
 instance.dispatchAction(action("POWER_CLOSE"));
