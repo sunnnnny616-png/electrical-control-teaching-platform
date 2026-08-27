@@ -26,10 +26,15 @@ const instance = definition.create({ scope, mountRoot: null, services: {} });
 const action = (type, payload = {}) => platform.contracts.createAction(type, payload, "acceptance");
 const checks = [];
 const check = (name, condition) => checks.push({ name, passed: Boolean(condition) });
+const publicIndex = fs.readFileSync(path.join(root, "index.html"), "utf8");
 
 check("Module Contract有效", platform.contracts.validateModuleContract(instance).valid);
 check("Facade输出有效", (() => { try { platform.contracts.assertFacadeOutputs(instance); return true; } catch (_) { return false; } })());
 check("模块内Solver与Geometry测试通过", instance.runTests().passed);
+check("正式公共层加载机床模块资源", publicIndex.includes("ch02_machine_tool_circuits/module.js") && publicIndex.includes("ch02_machine_tool_circuits/module.css"));
+check("正式公共层注册机床综合线路", publicIndex.includes("platform.moduleDefinitions.createCh02MachineToolCircuits()"));
+check("第二章菜单顺序为05", definition.meta.chapterId === "ch02" && definition.meta.code === "05" && definition.meta.order === 5);
+check("公共层扩展操作区已接入", publicIndex.includes('id="moduleExtraControls"') && publicIndex.includes("control.payload || {}"));
 
 instance.mount();
 instance.dispatchAction(action("POWER_CLOSE"));
