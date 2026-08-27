@@ -2460,6 +2460,14 @@
       margin-top: 10px;
     }
 
+    .module-extra-controls {
+      display: contents;
+    }
+
+    .module-extra-controls .ctrl-btn {
+      min-width: 0;
+    }
+
     .qf-btn {
       width: 100%;
       border-radius: 14px;
@@ -2766,6 +2774,7 @@
   </style>
   <link rel="stylesheet" href="./src/platform/shell/platform-shell-v1.css?v=20260822-2" />
   <link rel="stylesheet" href="./src/chapters/chapter01/modules/chapter01-circuits.css?v=20260825-3" />
+  <link rel="stylesheet" href="./src/chapters/chapter02/modules/ch02_machine_tool_circuits/module.css?v=20260827-1" />
 </head>
 <body>
   <div class="app-shell">
@@ -3108,6 +3117,7 @@
               <span class="chip"></span>
               <strong id="tripFr2Label">FR2 过载</strong>
             </button>
+            <div id="moduleExtraControls" class="module-extra-controls hidden" aria-label="当前模块扩展操作"></div>
           </div>
           <div class="btn-row">
             <button id="resetFr" class="small-btn">FR1 复位</button>
@@ -3232,6 +3242,12 @@
   <script src="./src/chapters/chapter02/modules/ch02_jog/module.js"></script>
   <script src="./src/chapters/chapter02/modules/ch02_continuous/module.js"></script>
   <script src="./src/chapters/chapter02/modules/ch02_reverse/module.js"></script>
+  <script src="./src/chapters/chapter02/modules/ch02_machine_tool_circuits/circuit.data.js"></script>
+  <script src="./src/chapters/chapter02/modules/ch02_machine_tool_circuits/solver.js"></script>
+  <script src="./src/chapters/chapter02/modules/ch02_machine_tool_circuits/teaching.js"></script>
+  <script src="./src/chapters/chapter02/modules/ch02_machine_tool_circuits/view.js"></script>
+  <script src="./src/chapters/chapter02/modules/ch02_machine_tool_circuits/facade.js"></script>
+  <script src="./src/chapters/chapter02/modules/ch02_machine_tool_circuits/module.js"></script>
   <script src="./src/platform/navigation/chapter-navigation.js"></script>
   <script>
     window.__FORWARD_REVERSE_BUILD_ID__ = "artifact-audit-2026-08-14-v1";
@@ -3310,6 +3326,19 @@
         principleText: "正转时，接触器使主回路保持正常相序；反转时，接触器将两相对调后送入电动机，从而改变转向。",
         promptText: "可先合上 QF1，再通过 SB2、SB3、SB1 和 FR1 观察启动、停止、自锁、互锁与过载保护过程。",
         footerTip: "教学演示会按真实动作顺序展示按钮、控制回路、线圈、辅助触点和主回路的变化。",
+        placeholderTag: "",
+        placeholderNote: "",
+        zones: []
+      },
+      "machine-tool-circuits": {
+        code: "05",
+        name: "机床综合线路",
+        experimentTitle: "机床综合线路仿真实验",
+        experimentSubtitle: "依据第二章第90、104页电路图，完成CA6140车床与Z3040摇臂钻床的多电机、多回路、SQ限位、KT延时及联锁仿真。",
+        principleTitle: "机床综合线路动作原理",
+        principleText: "通过QF、FU、KM、FR、SB、SQ、KT与YV的协调动作，观察主轴、进给、摇臂升降和液压夹紧回路的真实通断关系。",
+        promptText: "先选择CA6140或Z3040线路，合上QF，再按操作顺序启动、停止或触发限位与过载，观察动态电流、接触器、电机及保护状态。",
+        footerTip: "所有电流高亮、接触器动作、电机旋转、限位、延时和过载结果均由模块Solver状态驱动。",
         placeholderTag: "",
         placeholderNote: "",
         zones: []
@@ -3577,6 +3606,7 @@
       pressSb2: document.getElementById("pressSb2"),
       pressSb3: document.getElementById("pressSb3"),
       pressSb4: document.getElementById("pressSb4"),
+      moduleExtraControls: document.getElementById("moduleExtraControls"),
       tripFr: document.getElementById("tripFr"),
       tripFr2: document.getElementById("tripFr2"),
       resetFr: document.getElementById("resetFr"),
@@ -6444,13 +6474,14 @@
       return uiState.currentModule === "jog-control";
     }
 
-    function isChapterOneNativeModule() {
+    function isNativeFacadeCanvasModule() {
       return uiState.currentModule === "ch01-jog-control"
-        || uiState.currentModule === "ch01-direct-start-protection";
+        || uiState.currentModule === "ch01-direct-start-protection"
+        || uiState.currentModule === "machine-tool-circuits";
     }
 
     function isLiveCircuitModule() {
-      return isForwardReverseModule() || isMainControlModule() || isContinuousControlModule() || isJogControlModule() || isChapterOneNativeModule();
+      return isForwardReverseModule() || isMainControlModule() || isContinuousControlModule() || isJogControlModule() || isNativeFacadeCanvasModule();
     }
 
     function getActiveReferenceConfig() {
@@ -11620,9 +11651,9 @@
       refs.referenceSourceImage.setAttribute("preserveAspectRatio", "none");
 
       const live = isLiveCircuitModule();
-      const showDeveloperControls = live && !isChapterOneNativeModule() && hasDeveloperToolsEnabled();
-      refs.forwardReverseCanvas.classList.toggle("hidden", !live || isChapterOneNativeModule());
-      refs.chapterModuleCanvas.classList.toggle("hidden", !isChapterOneNativeModule());
+      const showDeveloperControls = live && !isNativeFacadeCanvasModule() && hasDeveloperToolsEnabled();
+      refs.forwardReverseCanvas.classList.toggle("hidden", !live || isNativeFacadeCanvasModule());
+      refs.chapterModuleCanvas.classList.toggle("hidden", !isNativeFacadeCanvasModule());
       refs.placeholderCanvas.classList.toggle("hidden", live);
       refs.developerCalibrationCard.classList.toggle("hidden", !showDeveloperControls);
       refs.developerPreviewCard.classList.toggle("hidden", !showDeveloperControls || isMainControlModule() || isContinuousControlModule() || isJogControlModule());
@@ -12013,7 +12044,7 @@
       updateModuleShell();
       renderActionFeedback();
 
-      if (isChapterOneNativeModule()) {
+      if (isNativeFacadeCanvasModule()) {
         resetCircuitViewportTransform();
         getCurrentFacadeInstance()?.render();
         renderCurrentFacadeStatusViewModel();
@@ -12503,7 +12534,8 @@
       if (phase === "press") actionType = control && control.pressAction;
       if (phase === "release") actionType = control && control.releaseAction;
       if (!actionType) return false;
-      dispatchCurrentFacadeAction(actionType, payload);
+      const actionPayload = { ...(control.payload || {}), ...payload };
+      dispatchCurrentFacadeAction(actionType, actionPayload);
       return true;
     }
 
@@ -12540,7 +12572,7 @@
       const facadeInstance = getCurrentFacadeInstance();
       const viewModel = facadeInstance && facadeInstance.getOperationViewModel();
       const actionType = viewModel && viewModel.protection && viewModel.protection.toggleAction;
-      if (actionType) return dispatchCurrentFacadeAction(actionType);
+      if (actionType) return dispatchCurrentFacadeAction(actionType, viewModel.protection.togglePayload || {});
       return handleTripFrButtonClick();
     }
 
@@ -12548,7 +12580,7 @@
       const facadeInstance = getCurrentFacadeInstance();
       const viewModel = facadeInstance && facadeInstance.getOperationViewModel();
       const actionType = viewModel && viewModel.protection && viewModel.protection.resetAction;
-      if (actionType) return dispatchCurrentFacadeAction(actionType);
+      if (actionType) return dispatchCurrentFacadeAction(actionType, viewModel.protection.resetPayload || {});
       return resetFr();
     }
 
@@ -12560,14 +12592,16 @@
     }
 
     function handleSecondaryProtectionPlatformAction() {
-      const actionType = getCurrentFacadeProtection("secondary")?.toggleAction;
-      if (actionType) return dispatchCurrentFacadeAction(actionType);
+      const protection = getCurrentFacadeProtection("secondary");
+      const actionType = protection?.toggleAction;
+      if (actionType) return dispatchCurrentFacadeAction(actionType, protection.togglePayload || {});
       return handleTripFr2ButtonClick();
     }
 
     function handleSecondaryProtectionResetPlatformAction() {
-      const actionType = getCurrentFacadeProtection("secondary")?.resetAction;
-      if (actionType) return dispatchCurrentFacadeAction(actionType);
+      const protection = getCurrentFacadeProtection("secondary");
+      const actionType = protection?.resetAction;
+      if (actionType) return dispatchCurrentFacadeAction(actionType, protection.resetPayload || {});
       return resetFr2();
     }
 
@@ -13536,6 +13570,20 @@
           || (state.calibration.enabled && !isSimulationSolverMode());
       });
 
+      const fixedSlots = new Set(Object.keys(slotMap));
+      const extraControls = (viewModel.controls || []).filter((control) => control.visible !== false && !fixedSlots.has(control.slot));
+      refs.moduleExtraControls.replaceChildren();
+      refs.moduleExtraControls.classList.toggle("hidden", extraControls.length === 0);
+      extraControls.forEach((control) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `ctrl-btn ${control.buttonClass || "forward"}`;
+        button.innerHTML = `<span class="chip"></span><strong>${control.label || "扩展操作"}</strong><span class="ctrl-btn-status">${control.stateText || ""}</span>`;
+        button.disabled = Boolean(control.disabled);
+        button.addEventListener("click", () => dispatchCurrentFacadeAction(control.action, control.payload || {}), { signal: platformModuleLoader?.getCurrent()?.scope?.signal });
+        refs.moduleExtraControls.appendChild(button);
+      });
+
       refs.toggleQf.textContent = viewModel.power.closeLabel;
       refs.openQf.textContent = viewModel.power.openLabel;
       refs.toggleQf.classList.toggle("on", Boolean(viewModel.power.closed));
@@ -13853,7 +13901,8 @@
         platform.moduleDefinitions.createCh02Reverse({
           circuitData: getLegacyCircuitData("forward-reverse"),
           port: createReverseModulePort()
-        })
+        }),
+        platform.moduleDefinitions.createCh02MachineToolCircuits()
       ];
       registrations.forEach((definition) => platformModuleRegistry.register(definition));
 
@@ -13868,7 +13917,7 @@
       platformModuleLoader = platform.loader.createModuleLoader({
         registry: platformModuleRegistry,
         mountRoot: refs.experimentRoot,
-        services: Object.freeze({ setActionFeedback, renderShell: render }),
+        services: Object.freeze({ setActionFeedback, renderShell: render, onFacadeOutput: () => queueMicrotask(render) }),
         setActiveModuleId: (routeId) => {
           uiState.currentModule = routeId;
           state.actionFeedback = {
