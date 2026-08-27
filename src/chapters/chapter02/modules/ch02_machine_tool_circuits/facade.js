@@ -20,9 +20,15 @@
     let mounted = false;
     let paused = false;
     let timerId = null;
-    const view = context?.mountRoot && platform.moduleViews?.createCh02MachineToolCircuitsView
+    let replayTimerId = null;
+    let replaySteps = [];
+    let replayIndex = -1;
+    let playbackSpeed = 1;
+    const publicCanvas = global.document?.getElementById?.("chapterModuleCanvas");
+    const viewMountRoot = publicCanvas || context?.mountRoot;
+    const view = viewMountRoot && platform.moduleViews?.createCh02MachineToolCircuitsView
       ? platform.moduleViews.createCh02MachineToolCircuitsView({
-        mountRoot: context.mountRoot,
+        mountRoot: viewMountRoot,
         dispatchAction: (type, payload = {}) => dispatchAction(contracts.createAction(type, payload, "module-view"))
       })
       : null;
@@ -32,6 +38,13 @@
       if (context?.scope?.clearTimeout) context.scope.clearTimeout(timerId);
       else global.clearTimeout(timerId);
       timerId = null;
+    }
+
+    function clearReplayTimer() {
+      if (replayTimerId === null) return;
+      if (context?.scope?.clearInterval) context.scope.clearInterval(replayTimerId);
+      else global.clearInterval(replayTimerId);
+      replayTimerId = null;
     }
 
     function recompute() {
@@ -175,11 +188,76 @@
     }
 
     function buildTeachingFeedback() { return teaching.buildFeedback(state, solverResult); }
-    function buildReplaySteps() { return teaching.buildReplaySteps(state, solverResult); }
+    function buildReplaySteps() {
+      return clone(replaySteps.length ? replaySteps : teaching.buildReplaySteps(state, solverResult));
+    }
+
+    function renderReplayDom() {
+      const doc = global.document;
+      if (!doc) return;
+      const list = doc.getElementById("principleStepList");
+      const show = doc.getElementById("showPrinciplePlayback");
+      const previous = doc.getElementById("playbackPrev");
+      const toggle = doc.getElementById("playbackToggle");
+      const next = doc.getElementById("playbackNext");
+      const note = doc.getElementById("currentStepText");
+      if (!list || !show || !previous || !toggle || !next || !note) return;
+      show.disabled = replaySteps.length === 0;
+      previous.disabled = replayIndex <= 0;
+      next.disabled = replayIndex < 0 || replayIndex >= replaySteps.length - 1;
+      toggle.disabled = replaySteps.length === 0;
+      toggle.textContent = replayTimerId === null ? "播放" : "暂停";
+      list.innerHTML = replaySteps.length
+        ? replaySteps.map((step, index) => `<div class="principle-step-item ${index < replayIndex ? "complete" : index === replayIndex ? "active" : "pending"}"><span class="principle-step-marker">${index < replayIndex ? "✓" : index === replayIndex ? "●" : "○"}</span><span class="principle-step-text">${step.title}：${step.text}</span></div>`).join("")
+        : '<div class="principle-step-item pending"><span class="principle-step-marker">○</span><span class="principle-step-text">执行一次操作后，可点击“展示原理”查看教学步骤。</span></div>';
+      note.textContent = replayIndex >= 0 ? `当前步骤：${replaySteps[replayIndex].title}。${replaySteps[replayIndex].text}` : "当前步骤：等待操作。";
+      [["playbackSpeed05", .5], ["playbackSpeed10", 1], ["playbackSpeed15", 1.5]].forEach(([id, speed]) => doc.getElementById(id)?.classList.toggle("active", playbackSpeed === speed));
+    }
+
+    function stepReplay(delta) {
+      if (!replaySteps.length) return;
+      replayIndex = Math.max(0, Math.min(replaySteps.length - 1, replayIndex + delta));
+      if (replayIndex === replaySteps.length - 1) clearReplayTimer();
+      renderReplayDom();
+    }
+
+    function toggleReplay() {
+      if (!replaySteps.length) return;
+      if (replayTimerId !== null) {
+        clearReplayTimer();
+        renderReplayDom();
+        return;
+      }
+      if (replayIndex < 0 || replayIndex >= replaySteps.length - 1) replayIndex = 0;
+      replayTimerId = context?.scope?.interval
+        ? context.scope.interval(() => stepReplay(1), 1600 / playbackSpeed)
+        : global.setInterval(() => stepReplay(1), 1600 / playbackSpeed);
+      renderReplayDom();
+    }
+
+    function bindReplayControls() {
+      const doc = global.document;
+      if (!doc || !context?.scope?.signal) return;
+      const bind = (id, handler) => doc.getElementById(id)?.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        handler();
+      }, { capture: true, signal: context.scope.signal });
+      bind("showPrinciplePlayback", () => { replayIndex = replaySteps.length ? 0 : -1; renderReplayDom(); });
+      bind("playbackPrev", () => stepReplay(-1));
+      bind("playbackToggle", toggleReplay);
+      bind("playbackNext", () => stepReplay(1));
+      [["playbackSpeed05", .5], ["playbackSpeed10", 1], ["playbackSpeed15", 1.5]].forEach(([id, speed]) => bind(id, () => {
+        playbackSpeed = speed;
+        clearReplayTimer();
+        renderReplayDom();
+      }));
+    }
 
     function render() {
       if (!mounted || paused || !view) return undefined;
       view.render({ data: circuitData, state: clone(state), result: clone(solverResult) });
+      renderReplayDom();
       context?.services?.onModuleRender?.(MODULE_ID);
       return true;
     }
@@ -244,9 +322,21 @@
         }
         default: throw new Error(`${MODULE_ID} does not support ${action.type}`);
       }
-      recompute(); render();
+      recompute();
+      clearReplayTimer();
+      replaySteps = teaching.buildReplaySteps(state, solverResult);
+      replayIndex = -1;
+      const feedback = buildTeachingFeedback();
+      context?.services?.setActionFeedback?.({
+        actionId: command || action.type,
+        label: feedback.title,
+        feedbackText: feedback.text,
+        tone: feedback.tone === "error" ? "warning" : feedback.tone === "on" ? "success" : "info"
+      });
+      render();
       const output = { action, state: getStateSnapshot(), solverResult: normalizeSolverResult(), operationViewModel: getOperationViewModel(), statusViewModel: getStatusViewModel(), feedback: buildTeachingFeedback() };
       context?.services?.onFacadeOutput?.(output);
+      context?.services?.renderShell?.();
       return output;
     }
 
@@ -266,16 +356,16 @@
     }
 
     return Object.freeze({
-      createInitialState: () => { clearTimer(); state = solver.createInitialState(); recompute(); return getStateSnapshot(); },
+      createInitialState: () => { clearTimer(); clearReplayTimer(); replaySteps = []; replayIndex = -1; state = solver.createInitialState(); recompute(); return getStateSnapshot(); },
       getStateSnapshot, dispatchAction,
       solve: (message = "facade solve") => { state.lastAction = { type: "SOLVE", message }; recompute(); return normalizeSolverResult(); },
       normalizeSolverResult, getOperationViewModel, getStatusViewModel, buildTeachingFeedback, buildReplaySteps,
-      mount: () => { mounted = true; paused = false; return getStateSnapshot(); },
+      mount: () => { mounted = true; paused = false; bindReplayControls(); return getStateSnapshot(); },
       render,
-      reset: () => { clearTimer(); state = solver.createInitialState(); recompute(); render(); return getStateSnapshot(); },
-      pause: () => { paused = true; },
+      reset: () => { clearTimer(); clearReplayTimer(); replaySteps = []; replayIndex = -1; state = solver.createInitialState(); recompute(); render(); return getStateSnapshot(); },
+      pause: () => { paused = true; clearReplayTimer(); },
       resume: () => { paused = false; render(); },
-      unmount: () => { clearTimer(); mounted = false; paused = false; view?.unmount(); },
+      unmount: () => { clearTimer(); clearReplayTimer(); mounted = false; paused = false; view?.unmount(); },
       validateGeometry, runTests
     });
   }
