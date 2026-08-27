@@ -1,0 +1,181 @@
+[data-module="ch02_mixed_jog_continuous"] {
+  --mixed-blue: var(--platform-blue, #0b63e6);
+  --mixed-green: var(--platform-green, #159447);
+  --mixed-red: var(--platform-red, #d9232e);
+  --mixed-wire: #27364a;
+  width: 100%;
+  min-height: 100%;
+  color: #111827;
+  font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+}
+
+[data-module="ch02_mixed_jog_continuous"] .mixed-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 10px 9px;
+  border-bottom: 1px solid #e5eaf0;
+}
+
+[data-module="ch02_mixed_jog_continuous"] .mixed-scheme-tabs,
+[data-module="ch02_mixed_jog_continuous"] .mixed-mode-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+[data-module="ch02_mixed_jog_continuous"] .mixed-scheme-button,
+[data-module="ch02_mixed_jog_continuous"] .mixed-mode-button {
+  min-height: 30px;
+  padding: 5px 10px;
+  border: 1px solid #d9e2ec;
+  border-radius: 7px;
+  color: #334155;
+  background: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+[data-module="ch02_mixed_jog_continuous"] .mixed-scheme-button[aria-pressed="true"],
+[data-module="ch02_mixed_jog_continuous"] .mixed-mode-button[aria-pressed="true"] {
+  color: #fff;
+  border-color: var(--mixed-blue);
+  background: var(--mixed-blue);
+}
+
+[data-module="ch02_mixed_jog_continuous"] .mixed-mode-tabs[hidden] {
+  display: none;
+}
+
+[data-module="ch02_mixed_jog_continuous"] .mixed-canvas-shell {
+  height: calc(100% - 48px);
+  min-height: 505px;
+  padding: 6px;
+  background: #fff;
+}
+
+[data-module="ch02_mixed_jog_continuous"] .mixed-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+[data-module="ch02_mixed_jog_continuous"] .mixed-panel {
+  fill: #fbfdff;
+  stroke: #dce4ed;
+  stroke-width: 1.5;
+}
+
+[data-module="ch02_mixed_jog_continuous"] .mixed-panel-title {
+  fill: #0f172a;
+  font-size: 18px;
+  font-weight: 750;
+}
+
+[data-module="ch02_mixed_jog_continuous"] .mixed-panel-note,
+[data-module="ch02_mixed_jog_continuous"] .mixed-label-small {
+  fill: #64748b;
+  font-size: 12px;
+}
+
+[data-module="ch02_mixed_jog_continuous"] .mixed-label {
+  fill: #111827;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+[data-module="ch02_mixed_jog_continuous"] .mixed-symbol,
+[data-module="ch02_mixed_jog_continuous"] .mixed-wire {
+  fill: none;
+  stroke: var(--mixed-wire);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+[data-module="ch02_mixed_jog_continuous"] .mixed-wire.is-partial {
+  stroke: #d59a17;
+}
+
+[data-module="ch02_mixed_jog_continuous"] .mixed-wire.is-active {
+  stroke: var(--mixed-green);
+  stroke-width: 4;
+  stroke-dasharray: 9 7;
+  animation: mixed-current-flow 1s linear infinite;
+}
+
+[data-module="ch02_mixed_jog_continuous"] .mixed-wire.phase-l2.is-active {
+  stroke: #0ea5e9;
+}
+
+[data-module="ch02_mixed_jog_continuous"] .mixed-wire.phase-l3.is-active {
+  stroke: #8b5cf6;
+}
+
+[data-module="ch02_mixed_jog_continuous"] .mixed-device.is-active .mixed-symbol,
+[data-module="ch02_mixed_jog_continuous"] .mixed-device.is-active rect,
+[data-module="ch02_mixed_jog_continuous"] .mixed-device.is-active circle {
+  stroke: var(--mixed-green);
+}
+
+[data-module="ch02_mixed_jog_continuous"] .mixed-device.is-tripped .mixed-symbol {
+  stroke: var(--mixed-red);
+}
+
+[data-module="ch02_mixed_jog_continuous"] .mixed-coil {
+  fill: #fff;
+  stroke: var(--mixed-wire);
+  stroke-width: 3;
+  rx: 5px;
+}
+
+[data-module="ch02_mixed_jog_continuous"] .mixed-device.is-active .mixed-coil {
+  fill: #eafaf1;
+}
+
+[data-module="ch02_mixed_jog_continuous"] .mixed-motor-rotor {
+  fill: none;
+  stroke: #64748b;
+  stroke-width: 3;
+  stroke-dasharray: 10 6;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+[data-module="ch02_mixed_jog_continuous"] .mixed-device.is-active .mixed-motor-rotor {
+  stroke: var(--mixed-green);
+  animation: mixed-motor-spin 850ms linear infinite;
+}
+
+[data-module="ch02_mixed_jog_continuous"] .mixed-status-chip {
+  fill: #f1f5f9;
+  stroke: #d8e0e8;
+}
+
+[data-module="ch02_mixed_jog_continuous"] .mixed-status-chip.is-on {
+  fill: #e8f8ef;
+  stroke: #8bd3aa;
+}
+
+[data-module="ch02_mixed_jog_continuous"] .mixed-status-text {
+  fill: #334155;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+@keyframes mixed-current-flow {
+  to { stroke-dashoffset: -32; }
+}
+
+@keyframes mixed-motor-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-module="ch02_mixed_jog_continuous"] .mixed-wire.is-active,
+  [data-module="ch02_mixed_jog_continuous"] .mixed-device.is-active .mixed-motor-rotor {
+    animation: none;
+  }
+}
