@@ -1,0 +1,130 @@
+[data-module="ch02_multi_point"] {
+  --multi-blue: var(--platform-blue, #0b63e6);
+  --multi-green: var(--platform-green, #159447);
+  --multi-red: var(--platform-red, #d9232e);
+  --multi-wire: #27364a;
+  width: 100%;
+  min-height: 100%;
+  color: #111827;
+  font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+}
+
+[data-module="ch02_multi_point"] .multi-canvas-shell {
+  height: 100%;
+  min-height: 540px;
+  padding: 6px;
+  background: #fff;
+}
+
+[data-module="ch02_multi_point"] .multi-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+[data-module="ch02_multi_point"] .multi-panel {
+  fill: #fbfdff;
+  stroke: #dce4ed;
+  stroke-width: 1.5;
+}
+
+[data-module="ch02_multi_point"] .multi-panel-title {
+  fill: #0f172a;
+  font-size: 18px;
+  font-weight: 750;
+}
+
+[data-module="ch02_multi_point"] .multi-panel-note,
+[data-module="ch02_multi_point"] .multi-label-small {
+  fill: #64748b;
+  font-size: 12px;
+}
+
+[data-module="ch02_multi_point"] .multi-label {
+  fill: #111827;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+[data-module="ch02_multi_point"] .multi-symbol,
+[data-module="ch02_multi_point"] .multi-wire {
+  fill: none;
+  stroke: var(--multi-wire);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+[data-module="ch02_multi_point"] .multi-wire.is-partial {
+  stroke: #d59a17;
+}
+
+[data-module="ch02_multi_point"] .multi-wire.is-active {
+  stroke: var(--multi-green);
+  stroke-width: 4;
+  stroke-dasharray: 9 7;
+  animation: multi-current-flow 1s linear infinite;
+}
+
+[data-module="ch02_multi_point"] .multi-wire.phase-l2.is-active { stroke: #0ea5e9; }
+[data-module="ch02_multi_point"] .multi-wire.phase-l3.is-active { stroke: #8b5cf6; }
+
+[data-module="ch02_multi_point"] .multi-device.is-active .multi-symbol,
+[data-module="ch02_multi_point"] .multi-device.is-active rect,
+[data-module="ch02_multi_point"] .multi-device.is-active circle {
+  stroke: var(--multi-green);
+}
+
+[data-module="ch02_multi_point"] .multi-coil {
+  fill: #fff;
+  stroke: var(--multi-wire);
+  stroke-width: 3;
+  rx: 5px;
+}
+
+[data-module="ch02_multi_point"] .multi-device.is-active .multi-coil { fill: #eafaf1; }
+
+[data-module="ch02_multi_point"] .multi-motor-rotor {
+  fill: none;
+  stroke: #64748b;
+  stroke-width: 3;
+  stroke-dasharray: 10 6;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+[data-module="ch02_multi_point"] .multi-device.is-active .multi-motor-rotor {
+  stroke: var(--multi-green);
+  animation: multi-motor-spin 850ms linear infinite;
+}
+
+[data-module="ch02_multi_point"] .multi-lamp {
+  fill: #fff;
+  stroke: var(--multi-wire);
+  stroke-width: 3;
+}
+
+[data-module="ch02_multi_point"] .multi-device.is-active .multi-lamp {
+  fill: #fff6bd;
+  stroke: #e2a900;
+  filter: drop-shadow(0 0 5px rgba(226, 169, 0, 0.38));
+}
+
+[data-module="ch02_multi_point"] .multi-prototype-tag {
+  fill: #f4f1ff;
+  stroke: #d7c8ff;
+}
+
+[data-module="ch02_multi_point"] .multi-prototype-text {
+  fill: #6d28d9;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+@keyframes multi-current-flow { to { stroke-dashoffset: -32; } }
+@keyframes multi-motor-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-module="ch02_multi_point"] .multi-wire.is-active,
+  [data-module="ch02_multi_point"] .multi-device.is-active .multi-motor-rotor { animation: none; }
+}

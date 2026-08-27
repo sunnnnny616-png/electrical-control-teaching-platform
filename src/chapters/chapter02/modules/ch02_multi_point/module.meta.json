@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0",
+  "chapterId": "ch02",
+  "moduleId": "ch02_multi_point",
+  "routeId": "multi-point-control",
+  "order": 6,
+  "code": "06",
+  "title": "多地点远程控制",
+  "shortTitle": "多地点控制",
+  "simulationLevel": "S2",
+  "maturity": "M3",
+  "status": "ready",
+  "integrationMode": "facade-v1",
+  "geometryLockId": "ch02_multi_point_geometry_v1_locked",
+  "reference": {
+    "source": "第二章 PPT 第39页（原图15）",
+    "indicatorPrototype": "HL1/HL2仅作为模块内可选显示，状态放入Solver Result extension，不升级为公共HL标准"
+  }
+}
